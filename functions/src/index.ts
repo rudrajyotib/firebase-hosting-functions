@@ -24,7 +24,9 @@ const { initializeApp } = require('firebase-admin/app');
 initializeApp()
 import express = require('express')
 import { getFirestore } from 'firebase-admin/firestore';
-import { QuestionRepository } from './repository/QuestionRepository';
+// import { QuestionRepository } from './repository/QuestionRepository';
+import {Request, Response} from 'express';
+import { QuestionService } from './service/QuestionService';
 const app = express()
 
 const db = getFirestore()
@@ -62,10 +64,13 @@ app.get('/apn', (_req: any, _res: any) => {
     _res.send('Success at APN')
 })
 
-app.get('/question', (_req: any, _res: any) => {
-    QuestionRepository.getQuestion('ZfQRsFN1AR7pGf2V4ZRD2')
+app.get('/question/:questionId', (_req: Request, _res: Response) => {
+    QuestionService.getQuestion(_req.params.questionId)
     .then(questionData => {
-        _res.send(questionData)
+        _res.status(200).send(questionData)
+    })
+    .catch(()=>{
+        _res.status(400).send('Error getting question')
     })
     // _res.send('Success at APN')
 })

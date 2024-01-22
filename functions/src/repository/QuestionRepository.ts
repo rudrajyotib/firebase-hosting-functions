@@ -4,7 +4,7 @@ import { logger } from "firebase-functions/v1"
 const repository = source.repository
 
 export const QuestionRepository = {
-    getQuestion : async function  (questionId:string) : Promise<Question> {
+    getQuestion : async function  (questionId:string) : Promise<Question | undefined> {
         
         return repository.collection('questions').doc(questionId)
             .get()
@@ -21,20 +21,10 @@ export const QuestionRepository = {
                     }
                     return result
                 }
-                return {
-                    format: 'Not Found',
-                    questionLines: [''],
-                    options: [''],
-                    correctOptionIndex: 1
-                }
+                return undefined
             })
-            .catch(error => {
-                return {
-                    format: 'singleLine',
-                    questionLines: [''],
-                    options: [''],
-                    correctOptionIndex: 1
-                }
+            .catch(() => {
+                return undefined
             })
         
     }
