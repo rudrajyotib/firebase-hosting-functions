@@ -2,10 +2,14 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
   app.use(
-    '/api/initialiseExam',
+    '/api',
     createProxyMiddleware({
-      target: 'http://localhost:5000',
+      target: 'http://localhost:9100/',
       changeOrigin: true,
+      logger: console,
+      pathRewrite:{
+        [`^/api/`]:`/`
+      }
     })
   );
 };

@@ -1,0 +1,93 @@
+simlet: hello-world
+
+response:
+  from: stub
+  body: 
+    file: "${simlet.path}/default.json"
+
+---
+simlet: greetings
+
+request:
+- method: GET
+- uriPathPattern: /greetings/{name}
+
+Name:
+  is: parameter
+  from: uriPathPattern
+  pattern: /greetings/{name}
+
+response:
+  from: template
+  body: "Greetings, ${ Name }!"
+
+---
+simlet: hi
+
+request:
+- method: GET
+- uriPath: /hi
+
+Name:
+  is: parameter
+  from: uriQueryParameter
+  named: name
+
+Place:
+  is: parameter
+  from: uriQueryParameter
+  named: place
+
+response:
+  from: template
+  body: "Hi, ${ Name && Name.first() ? Name.first() : 'Stranger' } from ${ Place && Place.first() ? Place.first() : 'Nowhere' }!"
+
+---
+
+simlet: query-active-exams
+
+request:
+- method: GET
+- uriPath: /exams/active
+
+StudentId:
+  is: parameter
+  from: uriQueryParameter
+  named: studentId
+
+response:
+  from: stub
+  
+  # If not configured the status will be defaulted to 200 
+  status: 200
+  
+  headers:
+  - "Content-Type: application/json;"
+  
+  # When the body uses the default UTF-8 charset, the body
+  # content can be specified directly as a value like this:
+  body: 
+    file: "${simlet.path}/active-exam-list.json"
+
+---
+
+simlet: start-active-exams
+
+request:
+- method: POST
+- uriPath: /exams/start
+
+
+response:
+  from: stub
+  
+  # If not configured the status will be defaulted to 200 
+  status: 200
+  
+  headers:
+  - "Content-Type: application/json;"
+  
+  # When the body uses the default UTF-8 charset, the body
+  # content can be specified directly as a value like this:
+  body: 
+    file: "${simlet.path}/success-exam-start.json"

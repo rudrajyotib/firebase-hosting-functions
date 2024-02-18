@@ -1,0 +1,9 @@
+{"responseCode":0, 
+"nextQuestion":{
+    "displayFormat": "textonly" ,
+    "questionLines": ["Question Line 1 Says - When did India get independence", "from the British rule?"], 
+    "options": ["1947", "1946", "1944", "1943"]
+}, 
+"secondsRemaining":2000,
+"questionId": "Q1"
+}

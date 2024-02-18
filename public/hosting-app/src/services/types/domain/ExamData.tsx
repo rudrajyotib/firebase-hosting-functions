@@ -1,6 +1,6 @@
 export type Question = {
     questionLines : string[],
-    displayFormat : 'textonly',
+    displayFormat : 'textonly' | 'textAndImage' | 'image',
     options : string[],
     questionId: string
 }
@@ -44,3 +44,8 @@ export type NextQuestionResponse = {
     questionIndex : number,
     secondsRemaining : number
 }
+
+export type ActiveExams = {
+    exams: {id: string, title: string}[]
+}
+

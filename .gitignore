@@ -8,6 +8,7 @@ functions/ui-debug.log
 public/hosting-app/build
 public/hosting-app/node_modules
 public/hosting-app/package-lock.json
+public/hosting-app/simulations/apisimulator.log
 
 # Logs
 logs
