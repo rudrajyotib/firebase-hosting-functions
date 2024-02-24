@@ -37,7 +37,7 @@ function acceptAnswerSubmissionHappyPathOnly(parmName){
                 },
                 id:"Q4"
             },
-            secondsRemaining: 60
+            secondsRemaining: 20
         },
         {
             responseCode:0,

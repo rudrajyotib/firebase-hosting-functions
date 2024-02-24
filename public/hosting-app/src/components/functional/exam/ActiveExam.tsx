@@ -4,6 +4,7 @@ import { ExamResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } fro
 import TimedQuestionAnswerInteraction from "./console/TimedQuestionAnswerInteraction";
 import { useParams } from "react-router-dom";
 import AllQuestionsAnswered from "./AllQuestionsAnswered";
+import TimeOut from "./TimeOut";
 
 interface ExamState {
     totalQuestions: number,
@@ -151,11 +152,18 @@ const ActiveExam = () => {
             }
         }}
         secondsRemaining={examState.secondsRemaining}
-        onTimeout={() => { console.log('timedout') }}
+        onTimeout={() => { setExamState((currentState: ExamState)=>{
+            const newState: ExamState = {...currentState}
+            newState.state = 'timedout'
+            return newState
+        }) }}
     />
     }
     if (examState.state === 'finalAnswerSubmitted'){
         content = <AllQuestionsAnswered/>
+    }
+    if (examState.state === 'timedout'){
+        content = <TimeOut/>
     }
 
     return (<div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
