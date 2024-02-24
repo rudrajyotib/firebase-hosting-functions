@@ -1,0 +1,13 @@
+{
+    "responseCode":0,
+    "allAnswered":false,
+    "nextQuestion":{
+        "question":{
+            "displayFormat": "textonly" ,
+            "questionLines": ["Which city is the capital of India?"], 
+            "options": ["Kolkata", "Bengaluru", "New Delhi", "Mumbai"]
+        },
+        "id":"Q2"
+    },
+    "secondsRemaining": 200
+}

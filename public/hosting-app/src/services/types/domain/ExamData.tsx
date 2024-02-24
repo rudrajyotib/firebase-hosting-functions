@@ -26,12 +26,15 @@ export type ExamResponse = {
 export type SubmitAnswerRequest = {
     examInstanceId: string,
     questionId : string,
-    selectedOption: number
+    selectedOption: number,
+    studentId: string
 }
 
 export type SubmitAnswerResponse = {
-    submitAnswerSuccess: boolean,
-    nextQuestionAvailable: boolean
+    staus: 'Success' | 'Timedout' | 'Failed' | 'AllAnswered',
+    allAnswered: boolean,
+    nextQuestion?: Question,
+    secondsRemaining: number 
 }
 
 export type NextQuestionRequest = {

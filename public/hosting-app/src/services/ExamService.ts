@@ -1,6 +1,6 @@
-import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerResponse } from "./types/domain/ExamData"
-import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, StartExamResponse } from "./types/api/ExamApi"
+import axios, { Axios, AxiosResponse } from "axios"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } from "./types/domain/ExamData"
+import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithId, StartExamResponse } from "./types/api/ExamApi"
 
 const ExamService = {
 
@@ -88,11 +88,45 @@ const ExamService = {
         })
     },
 
-    submitAnswer: (examId: string, questionId: string, answerIndex: number, successCallback: (response: SubmitAnswerResponse) => void) => {
-        console.log('submitting question')
-        successCallback({
-            nextQuestionAvailable: true,
-            submitAnswerSuccess: true
+    submitAnswer: (answer: SubmitAnswerRequest,  successCallback: (response: SubmitAnswerResponse) => void) => {
+        console.log('submitting answer')
+        axios.post('/api/exams/answer', {
+             studentId: answer.studentId,
+             questionId: answer.questionId, 
+             examId: answer.examInstanceId,
+             answer: answer.selectedOption},{
+            'headers' : {
+                'Accept' : 'application/JSON'
+            },
+            validateStatus: (status:number) =>{
+                if (status === 200 || status === 400){
+                    return true
+                }
+                return false
+            }
+        } ).then((res:AxiosResponse)=>{
+            console.log('answer received', res.data)
+            if (res.status === 200){
+                const responseData: ApiSubmitAnswerResponse = res.data
+                const submitAnswerResponse: SubmitAnswerResponse = {
+                    staus: responseData.allAnswered===true ? 'AllAnswered' : 'Success',
+                    allAnswered: responseData.allAnswered,
+                    secondsRemaining: responseData.allAnswered ? 0 : responseData.secondsRemaining
+                }
+                if (responseData.nextQuestion){
+                    const nextQuestionResponse: QuestionWithId = responseData.nextQuestion
+                    const nextQuestion: Question = {
+                        questionLines: nextQuestionResponse.question.questionLines,
+                        displayFormat: nextQuestionResponse.question.displayFormat,
+                        options: nextQuestionResponse.question.options,
+                        questionId: nextQuestionResponse.id
+                    }
+                    submitAnswerResponse.nextQuestion = nextQuestion
+                }    
+                successCallback(submitAnswerResponse)
+            }
+        }).catch((error)=>{
+            console.log('error in submitting', error)
         })
     }
 }
