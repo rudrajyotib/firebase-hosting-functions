@@ -1,12 +1,12 @@
-import axios, { Axios, AxiosResponse } from "axios"
+import axios, { AxiosResponse } from "axios"
 import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithId, StartExamResponse } from "./types/api/ExamApi"
 
 const ExamService = {
 
-    queryActiveExams: (studentId: string, successCallback : (response: ActiveExams)=> void) => {
-        console.log('querying active exam for student', studentId)
-        axios.get('/api/exams/active?studentId=student1')
+    queryActiveExams: (examineeId: string, successCallback : (response: ActiveExams)=> void) => {
+        console.log('querying active exam for student', examineeId)
+        axios.get('/api/exams/active?examineeId=student1')
             .then((res:AxiosResponse)=>{
                 const activeExams : ActiveExams = {exams:[]}
                 if (res.status === 200){
@@ -15,8 +15,8 @@ const ExamService = {
                         if (httpResponse.length > 0){
                          httpResponse.forEach((value: ActiveExamQueryResponseDefinition)=>{
                             activeExams.exams.push({
-                                id: value.examId,
-                                title: value.examTitle
+                                id: value.id,
+                                title: value.label
                             })
                          })
                         }

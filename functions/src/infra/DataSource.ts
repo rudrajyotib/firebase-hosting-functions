@@ -1,11 +1,11 @@
 
 
-import { getFirestore } from 'firebase-admin/firestore';
+import {getFirestore} from "firebase-admin/firestore";
 
 
-const firestore = getFirestore()
+const firestore = getFirestore();
 
 
 export const source = {
-    repository : firestore
-}
+    repository: firestore,
+};

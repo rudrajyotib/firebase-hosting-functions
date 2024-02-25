@@ -1,5 +1,5 @@
 export type Question = {
-    format: string,
+    format: "textOnly" | "textWithImage",
     questionLines : string[],
     options: string[],
     correctOptionIndex : number

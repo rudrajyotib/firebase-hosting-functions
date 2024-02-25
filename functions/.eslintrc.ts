@@ -28,5 +28,6 @@ module.exports = {
     "quotes": ["error", "single"],
     "import/no-unresolved": 0,
     "indent": ["error", 4],
+    "max-len": ["warn", { code: 120, ignoreComments: true }],
   },
 };
