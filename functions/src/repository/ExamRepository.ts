@@ -31,4 +31,32 @@ export const ExamRepository = {
             });
         return examInstances;
     },
+
+    startExam: async (examineeId: string, examInstanceId: string) : Promise<number> =>{
+        if ( (examineeId === undefined || examineeId === "") ||
+            (examInstanceId === undefined || examInstanceId === "") ) {
+            return 1;
+        }
+        const examInstanceRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
+         repository.collection("ExamInstance").doc(examInstanceId);
+        const examInstanceDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>=await examInstanceRef.get();
+        if (!examInstanceDoc.exists) {
+            return 2;
+        }
+        if (examineeId !== examInstanceDoc.get("examineeId")) {
+            return 3;
+        }
+        if ("ready" !== examInstanceDoc.get("status")) {
+            return 4;
+        }
+        return examInstanceRef
+            .update({status: "inProgress"})
+            .then(()=>{
+                return 0;
+            })
+            .catch((e)=>{
+                functions.logger.error("Repository failed to update exam Instace", e);
+                return 5;
+            });
+    },
 };
