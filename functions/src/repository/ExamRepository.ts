@@ -1,62 +1,138 @@
 /* eslint-disable max-len */
 import functions = require("firebase-functions")
 import {source} from "../infra/DataSource";
-import {ExamInstanceSummary, ExamInstanceSummaryBuilder} from "../model/ExamInstanceSummary";
+import {ExamInstanceSummary} from "../model/ExamInstanceSummary";
+import {ExamInstanceDetail} from "../model/ExamInstanceDetail";
+import {ExamInstanceDetailsConverter, ExamInstanceSummaryConverter} from "./converters/ExamDataConverter";
+import {RepositoryResponse} from "./data/RepositoryResponse";
+import {Question} from "../model/Question";
+import {QuestionRepository} from "./QuestionRepository";
+import {ExamInstanceState, ExamInstanceStateBuilder} from "../model/ExamInstanceState";
+import {Examinee} from "../model/Examinee";
+import {ExamineeConverter} from "./converters/ExamineeConverter";
 
 const repository = source.repository;
 
+
 export const ExamRepository = {
-    listActiveExams: async (examineeId: string): Promise<ExamInstanceSummary[]> => {
+    listActiveExams: async (examineeId: string): Promise<RepositoryResponse<ExamInstanceSummary[]>> => {
         const examInstances: ExamInstanceSummary[] = [];
+        const response: RepositoryResponse<ExamInstanceSummary[]> = {
+            responseCode: -1,
+            data: examInstances,
+        };
         functions.logger.log("Repository querying active exams for::", examineeId);
         await repository
             .collection("ExamInstance")
+            .withConverter(ExamInstanceSummaryConverter)
             .where("examineeId", "==", examineeId)
+            .where("status", "==", "ready")
             .get()
-            .then((snapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>)=>{
+            .then((snapshot: FirebaseFirestore.QuerySnapshot<ExamInstanceSummary>) => {
                 functions.logger.log("Found results::", snapshot.docs.length);
                 snapshot.forEach((element) => {
-                    const examInstanceSummary: ExamInstanceSummary =
-                    new ExamInstanceSummaryBuilder()
-                        .withId(element.id)
-                        .withGrade(element.get("grade"))
-                        .withExamineeId(element.get("examineeId"))
-                        .withTitle(element.get("examTitle"))
-                        .withSubject(element.get("subject"))
-                        .withStatus(element.get("status"))
-                        .withOrganiser(element.get("organiser"))
-                        .build();
-                    examInstances.push(examInstanceSummary);
+                    examInstances.push(element.data());
                 });
+                response.responseCode = 0;
             });
-        return examInstances;
+        return response;
     },
 
-    startExam: async (examineeId: string, examInstanceId: string) : Promise<number> =>{
-        if ( (examineeId === undefined || examineeId === "") ||
-            (examInstanceId === undefined || examInstanceId === "") ) {
-            return 1;
+    startExam: async (examineeId: string, examInstanceId: string): Promise<RepositoryResponse<ExamInstanceState>> => {
+        const repositoryResponse: RepositoryResponse<ExamInstanceState> = {
+            responseCode: -1,
+            data: undefined,
+        };
+        if ((examineeId === undefined || examineeId === "") ||
+            (examInstanceId === undefined || examInstanceId === "")) {
+            repositoryResponse.responseCode = 1;
+            return repositoryResponse;
         }
-        const examInstanceRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> =
-         repository.collection("ExamInstance").doc(examInstanceId);
-        const examInstanceDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>=await examInstanceRef.get();
+        const examInstanceStateBuilder: ExamInstanceStateBuilder = new ExamInstanceStateBuilder();
+        examInstanceStateBuilder.withExamInstanceId(examInstanceId);
+        examInstanceStateBuilder.withExamineeId(examineeId);
+        const examInstanceRef: FirebaseFirestore.DocumentReference<ExamInstanceDetail> =
+            repository.collection("ExamInstance").withConverter(ExamInstanceDetailsConverter).doc(examInstanceId);
+        const examInstanceDoc: FirebaseFirestore.DocumentSnapshot<ExamInstanceDetail> = await examInstanceRef.get();
         if (!examInstanceDoc.exists) {
-            return 2;
+            repositoryResponse.responseCode = 2;
+            return repositoryResponse;
         }
-        if (examineeId !== examInstanceDoc.get("examineeId")) {
-            return 3;
+        const examInstanceDetail = examInstanceDoc.data();
+        if (examInstanceDetail === undefined) {
+            repositoryResponse.responseCode = 2;
+            return repositoryResponse;
         }
-        if ("ready" !== examInstanceDoc.get("status")) {
-            return 4;
+        if (examineeId !== examInstanceDetail.examineeId) {
+            repositoryResponse.responseCode = 3;
+            return repositoryResponse;
         }
-        return examInstanceRef
-            .update({status: "inProgress"})
-            .then(()=>{
-                return 0;
+        if ("ready" !== examInstanceDetail.status) {
+            repositoryResponse.responseCode = 4;
+            return repositoryResponse;
+        }
+        examInstanceDetail.setInProgress();
+        const update = await examInstanceRef.set(examInstanceDetail, {
+            merge: true,
+        }).then(() => {
+            return 0;
+        }).catch((e) => {
+            functions.logger.error("Repository failed to update exam Instace", e);
+            return 5;
+        });
+        if (update === 0) {
+            const nextQuestionId: string = examInstanceDetail.questions[0];
+            functions.logger.log("Starting exam::"+examInstanceDetail.id+"::Question::"+nextQuestionId);
+            const questionFromRepo: RepositoryResponse<Question> = await QuestionRepository.getQuestion(nextQuestionId);
+            if (questionFromRepo.responseCode === 0) {
+                examInstanceStateBuilder.withStatus("InProgress");
+                examInstanceStateBuilder.withDuration(examInstanceDetail.duration);
+                if (examInstanceDetail.startTime) {
+                    examInstanceStateBuilder.withStartTime(examInstanceDetail.startTime);
+                }
+                examInstanceStateBuilder.withTotalQuestions(examInstanceDetail.totalQuestions);
+                examInstanceStateBuilder.withCurrentQuestionIndex(0);
+                if (questionFromRepo.data) {
+                    examInstanceStateBuilder.withNextQuestion(questionFromRepo.data);
+                }
+                repositoryResponse.responseCode = 0;
+                repositoryResponse.data = examInstanceStateBuilder.build();
+            }
+        } else {
+            repositoryResponse.responseCode = 6;
+        }
+        return repositoryResponse;
+    },
+
+    createNewExamInstance: async (examInstanceDetail: ExamInstanceDetail): Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: 0, data: ""};
+        await repository.collection("ExamInstance")
+            .withConverter(ExamInstanceDetailsConverter)
+            .add(examInstanceDetail)
+            .then((data: FirebaseFirestore.DocumentReference<ExamInstanceDetail>) => {
+                response.data = data.id;
+                response.responseCode = 0;
             })
-            .catch((e)=>{
-                functions.logger.error("Repository failed to update exam Instace", e);
-                return 5;
+            .catch(() => {
+                response.responseCode = -1;
+                response.data = "";
             });
+        return response;
+    },
+
+    createNewExaminee: async (examinee: Examinee): Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: 0, data: ""};
+        await repository.collection("Examinee")
+            .withConverter(ExamineeConverter)
+            .add(examinee)
+            .then((data: FirebaseFirestore.DocumentReference<Examinee>) => {
+                response.data = data.id;
+                response.responseCode = 0;
+            })
+            .catch(() => {
+                response.responseCode = -1;
+                response.data = "";
+            });
+        return response;
     },
 };

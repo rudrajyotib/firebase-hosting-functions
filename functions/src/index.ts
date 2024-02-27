@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /**
  * Import function triggers from their respective submodules:
  *
@@ -26,9 +27,8 @@ import express = require("express")
 import {getFirestore} from "firebase-admin/firestore";
 // import { QuestionRepository } from './repository/QuestionRepository';
 import {Request, Response} from "express";
-import {QuestionService} from "./service/QuestionService";
 import {examRouter} from "./api/router/ExamRouter";
-import {AddExamAndExaminee as addExamAndExaminee} from "./api/TestOnly";
+import {AddExamConverter as addExamConverter, AddExamAndExaminee as addExamAndExaminee} from "./api/TestOnly";
 const app = express();
 
 const db = getFirestore();
@@ -66,20 +66,13 @@ app.get("/apn", (_req: any, _res: any) => {
     _res.send("Success at APN11");
 });
 
-app.get("/question/:questionId", (_req: Request, _res: Response) => {
-    QuestionService.getQuestion(_req.params.questionId)
-        .then((questionData) => {
-            _res.status(200).send(questionData);
-        })
-        .catch(()=>{
-            _res.status(400).send("Error getting question");
-        });
-    // _res.send('Success at APN')
-});
 
 app.use("/exams", examRouter);
 app.get("/loadtestdata", (_req: Request, _res: Response) => {
     addExamAndExaminee(_req, _res);
+});
+app.get("/loadtestdatac", (_req: Request, _res: Response) => {
+    addExamConverter(_req, _res);
 });
 const main = express();
 main.use("/api", app);
