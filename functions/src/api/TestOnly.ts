@@ -35,7 +35,7 @@ export const AddExamAndExaminee =
             .withCorrectOptionIndex(0)
             .build());
 
-        await QuestionRepository.addQuestion(new QuestionBuilder()
+        const q2: RepositoryResponse<string> =await QuestionRepository.addQuestion(new QuestionBuilder()
             .withQuestionLine("Q2 L1")
             .withQuestionLine("Q2 L2")
             .withOption("Q2 O1")
@@ -51,6 +51,7 @@ export const AddExamAndExaminee =
             .withSubject("English")
             .withStatus("Ready")
             .withQuestion(q1.data ? q1.data : "")
+            .withQuestion(q2.data ? q2.data : "")
             .withOrganiser("Harvest")
             .withGrade("2")
             .withExamineeId(examinee1.data ? examinee1.data : "")

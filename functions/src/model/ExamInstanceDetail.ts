@@ -8,7 +8,7 @@ export class ExamInstanceDetail {
     grade: string;
     template: string;
     questions: string[];
-    // secondsRemaining: number;
+    answers: number[];
     examTitle: string;
     organiser: string;
     startTime?: Date;
@@ -23,7 +23,7 @@ export class ExamInstanceDetail {
         grade: string,
         template: string,
         questions: string[],
-        // secondsRemaining: number,
+        answers: number[],
         examTitle: string,
         organiser: string,
         status: string,
@@ -37,7 +37,7 @@ export class ExamInstanceDetail {
         this.grade = grade;
         this.template = template;
         this.questions = questions;
-        // this.secondsRemaining = secondsRemaining;
+        this.answers = answers;
         this.examTitle = examTitle;
         this.organiser = organiser;
         this.startTime = startTime;
@@ -48,7 +48,7 @@ export class ExamInstanceDetail {
     }
 
     getSecondsRemaining = ()=>{
-        if (this.status === "inProgress" && this.startTime) {
+        if (this.status === "InProgress" && this.startTime) {
             const passedSeconds = (new Date().getUTCSeconds() - this.startTime.getUTCSeconds());
             return this.duration - passedSeconds;
         }
@@ -56,11 +56,35 @@ export class ExamInstanceDetail {
     };
 
     setInProgress = () => {
-        if (this.status === "ready") {
+        if (this.status === "Ready") {
             this.status = "InProgress";
             this.startTime = new Date();
             this.currentQuestionIndex = 0;
         }
+    };
+
+    isInProgress = () => {
+        return (this.status === "InProgress" && this.getSecondsRemaining() > 0);
+    };
+
+    answerQuestionAndMoveToNext = (questionId: string, answer: number ) =>{
+        if (this.questions[this.currentQuestionIndex] !== questionId) {
+            return -1;
+        }
+        if (answer < 0) {
+            return -2;
+        }
+        this.answers.push(answer);
+        if (this.currentQuestionIndex === (this.totalQuestions-1)) {
+            this.status = "AllAnswered";
+            return 1;
+        }
+        this.currentQuestionIndex = this.currentQuestionIndex+1;
+        return 0;
+    };
+
+    isExamOver = () => {
+        return (this.status === "AllAnswered" || this.getSecondsRemaining()<0 );
     };
 }
 
@@ -71,7 +95,7 @@ export class ExamInstanceDetailBuilder {
     grade = "";
     template = "";
     questions: string[] = [];
-    // secondsRemaining = 0;
+    answers: number[] = [];
     examTitle = "";
     organiser = "";
     startTime?: Date;
@@ -107,6 +131,11 @@ export class ExamInstanceDetailBuilder {
 
     withQuestion = (question: string) => {
         this.questions.push(question);
+        return this;
+    };
+
+    withAnswer = (answer: number) => {
+        this.answers.push(answer);
         return this;
     };
 
@@ -156,7 +185,7 @@ export class ExamInstanceDetailBuilder {
         this.grade,
         this.template,
         this.questions,
-        // this.secondsRemaining,
+        this.answers,
         this.examTitle,
         this.organiser,
         this.status,

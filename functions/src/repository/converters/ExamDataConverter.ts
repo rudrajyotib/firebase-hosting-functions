@@ -12,6 +12,7 @@ export const ExamInstanceDetailsConverter : FirestoreDataConverter<ExamInstanceD
             grade: examInstanceDetail.grade,
             template: examInstanceDetail.template,
             questions: examInstanceDetail.questions,
+            answers: examInstanceDetail.answers,
             examTitle: examInstanceDetail.examTitle,
             organiser: examInstanceDetail.organiser,
             status: examInstanceDetail.status,
@@ -37,6 +38,10 @@ export const ExamInstanceDetailsConverter : FirestoreDataConverter<ExamInstanceD
         const questions:string[] = snapshot.get("questions");
         questions.forEach( (q) => {
             examInstanceBuilder.withQuestion(q);
+        });
+        const answers:number[] = snapshot.get("answers");
+        answers.forEach( (a) => {
+            examInstanceBuilder.withAnswer(a);
         });
         if (snapshot.get("startTime")) {
             const startTime: Timestamp = snapshot.get("startTime");

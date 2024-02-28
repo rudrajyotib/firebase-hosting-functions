@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
 import {Request, Response} from "express";
 import functions = require("firebase-functions")
 import {ExamRepository} from "../../repository/ExamRepository";
 import {ExamInstanceSummary} from "../../model/ExamInstanceSummary";
-import {ActiveExamQueryResponseDefinition, ResponseQuestionBody, StartExamResponse} from "../interfaces/ExamInteractionDto";
+import {ActiveExamQueryResponseDefinition, ResponseQuestionBody, StartExamResponse, SubmitAnswerRequest} from "../interfaces/ExamInteractionDto";
 import {RepositoryResponse} from "../../repository/data/RepositoryResponse";
 import {ExamInstanceState} from "../../model/ExamInstanceState";
 import {ApiResponse} from "../interfaces/ApiResponse";
@@ -38,6 +39,34 @@ export const StartExam =
         const examInstanceId = req.body.examInstanceId;
         functions.logger.log("received exam start for", examineeId);
         const repositoryResponse: RepositoryResponse<ExamInstanceState> = await ExamRepository.startExam(examineeId, examInstanceId);
+        const apiResponse: ApiResponse<StartExamResponse> = {
+            responseCode: repositoryResponse.responseCode,
+        };
+        if (repositoryResponse.responseCode === 0 && repositoryResponse.data) {
+            if (repositoryResponse.data.nextQuestion) {
+                apiResponse.responseCode = 0;
+                const nextQuestion: ResponseQuestionBody = {
+                    displayFormat: repositoryResponse.data.nextQuestion.format,
+                    questionLines: repositoryResponse.data.nextQuestion.questionLines,
+                    options: repositoryResponse.data.nextQuestion.options,
+                };
+                const startExamResponse: StartExamResponse = {
+                    nextQuestion: nextQuestion,
+                    totalQuestions: repositoryResponse.data.totalQuestions,
+                    secondsRemaining: repositoryResponse.data.getRemainingSeconds(),
+                    questionId: repositoryResponse.data.nextQuestion.id,
+                };
+                apiResponse.data = startExamResponse;
+            }
+        }
+        res.status(200).json(apiResponse);
+    };
+
+export const AnswerQuestion =
+    async (req: Request, res: Response) => {
+        const submitAnswerRequest: SubmitAnswerRequest = req.body;
+        const repositoryResponse: RepositoryResponse<ExamInstanceState> = await
+        ExamRepository.answerQuestion(submitAnswerRequest);
         const apiResponse: ApiResponse<StartExamResponse> = {
             responseCode: repositoryResponse.responseCode,
         };

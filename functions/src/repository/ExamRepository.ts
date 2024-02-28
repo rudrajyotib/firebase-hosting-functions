@@ -10,6 +10,7 @@ import {QuestionRepository} from "./QuestionRepository";
 import {ExamInstanceState, ExamInstanceStateBuilder} from "../model/ExamInstanceState";
 import {Examinee} from "../model/Examinee";
 import {ExamineeConverter} from "./converters/ExamineeConverter";
+import {SubmitAnswerRequest} from "../api/interfaces/ExamInteractionDto";
 
 const repository = source.repository;
 
@@ -67,7 +68,7 @@ export const ExamRepository = {
             repositoryResponse.responseCode = 3;
             return repositoryResponse;
         }
-        if ("ready" !== examInstanceDetail.status) {
+        if ("Ready" !== examInstanceDetail.status) {
             repositoryResponse.responseCode = 4;
             return repositoryResponse;
         }
@@ -82,7 +83,7 @@ export const ExamRepository = {
         });
         if (update === 0) {
             const nextQuestionId: string = examInstanceDetail.questions[0];
-            functions.logger.log("Starting exam::"+examInstanceDetail.id+"::Question::"+nextQuestionId);
+            functions.logger.log("Starting exam::" + examInstanceDetail.id + "::Question::" + nextQuestionId);
             const questionFromRepo: RepositoryResponse<Question> = await QuestionRepository.getQuestion(nextQuestionId);
             if (questionFromRepo.responseCode === 0) {
                 examInstanceStateBuilder.withStatus("InProgress");
@@ -134,5 +135,87 @@ export const ExamRepository = {
                 response.data = "";
             });
         return response;
+    },
+
+    answerQuestion: async (submitAnswerRequest: SubmitAnswerRequest): Promise<RepositoryResponse<ExamInstanceState>> => {
+        const repositoryResponse: RepositoryResponse<ExamInstanceState> = {
+            responseCode: -1,
+        };
+        if ((submitAnswerRequest.examineeId === undefined || submitAnswerRequest.examineeId === "") ||
+            (submitAnswerRequest.examInstanceId === undefined || submitAnswerRequest.examInstanceId === "") ||
+            (submitAnswerRequest.questionId === undefined || submitAnswerRequest.questionId === "") ||
+            (submitAnswerRequest.answer === undefined || (submitAnswerRequest.answer < 0))) {
+            repositoryResponse.responseCode = 1;
+            return repositoryResponse;
+        }
+        const examInstanceStateBuilder: ExamInstanceStateBuilder = new ExamInstanceStateBuilder();
+        examInstanceStateBuilder.withExamInstanceId(submitAnswerRequest.examInstanceId);
+        examInstanceStateBuilder.withExamineeId(submitAnswerRequest.examineeId);
+        const examInstanceRef: FirebaseFirestore.DocumentReference<ExamInstanceDetail> =
+            repository.collection("ExamInstance").withConverter(ExamInstanceDetailsConverter).doc(submitAnswerRequest.examInstanceId);
+        const examInstanceDoc: FirebaseFirestore.DocumentSnapshot<ExamInstanceDetail> = await examInstanceRef.get();
+        if (!examInstanceDoc.exists) {
+            repositoryResponse.responseCode = 2;
+            return repositoryResponse;
+        }
+        const examInstanceDetail = examInstanceDoc.data();
+        if (examInstanceDetail === undefined) {
+            repositoryResponse.responseCode = 2;
+            return repositoryResponse;
+        }
+        if (submitAnswerRequest.examineeId !== examInstanceDetail.examineeId) {
+            repositoryResponse.responseCode = 3;
+            return repositoryResponse;
+        }
+        functions.logger.log("Status::" + examInstanceDetail.status + "SecondsRemaining::" + examInstanceDetail.getSecondsRemaining());
+        if (!examInstanceDetail.isInProgress()) {
+            repositoryResponse.responseCode = 4;
+            return repositoryResponse;
+        }
+        const answerUpdate = examInstanceDetail.answerQuestionAndMoveToNext(submitAnswerRequest.questionId,
+            submitAnswerRequest.answer);
+        functions.logger.debug("After answer:", examInstanceDetail);
+        if (answerUpdate < 0) {
+            repositoryResponse.responseCode = 5;
+            return repositoryResponse;
+        }
+        const update = await examInstanceRef.set(examInstanceDetail, {
+            merge: true,
+        }).then(() => {
+            return 0;
+        }).catch((e) => {
+            functions.logger.error("Repository failed to update exam Instace", e);
+            return 1;
+        });
+        if (update != 0) {
+            repositoryResponse.responseCode = 7;
+            return repositoryResponse;
+        }
+        if (answerUpdate > 0) {
+            repositoryResponse.responseCode = 6;
+            return repositoryResponse;
+        }
+
+
+        const nextQuestionId: string = examInstanceDetail.questions[examInstanceDetail.currentQuestionIndex];
+        functions.logger.log("Starting exam::" + examInstanceDetail.id + "::Question::" + nextQuestionId);
+        const questionFromRepo: RepositoryResponse<Question> = await QuestionRepository.getQuestion(nextQuestionId);
+        if (questionFromRepo.responseCode === 0) {
+            examInstanceStateBuilder.withStatus("InProgress");
+            examInstanceStateBuilder.withDuration(examInstanceDetail.duration);
+            if (examInstanceDetail.startTime) {
+                examInstanceStateBuilder.withStartTime(examInstanceDetail.startTime);
+            }
+            examInstanceStateBuilder.withTotalQuestions(examInstanceDetail.totalQuestions);
+            examInstanceStateBuilder.withCurrentQuestionIndex(0);
+            if (questionFromRepo.data) {
+                examInstanceStateBuilder.withNextQuestion(questionFromRepo.data);
+            }
+            repositoryResponse.responseCode = 0;
+            repositoryResponse.data = examInstanceStateBuilder.build();
+        } else {
+            repositoryResponse.responseCode = 9;
+        }
+        return repositoryResponse;
     },
 };

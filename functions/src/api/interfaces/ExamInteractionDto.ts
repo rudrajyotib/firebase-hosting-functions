@@ -8,7 +8,7 @@ export type Question = {
 export type SubmitAnswerRequest = {
     questionId: string,
     answer: number,
-    examId: string,
+    examInstanceId: string,
     examineeId: string
 }
 export type StartExamRequest = {
