@@ -57,6 +57,7 @@ export const AddExamAndExaminee =
             .withExamineeId(examinee1.data ? examinee1.data : "")
             .withExamTitle("Grade 2 English")
             .withDuration(1800)
+            .withTotalQuestions(2)
             .build());
 
         res.status(200).send("Done");

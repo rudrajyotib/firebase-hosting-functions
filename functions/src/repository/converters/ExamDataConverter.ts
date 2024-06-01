@@ -19,6 +19,7 @@ export const ExamInstanceDetailsConverter : FirestoreDataConverter<ExamInstanceD
             totalQuestions: examInstanceDetail.totalQuestions,
             currentQuestionIndex: examInstanceDetail.currentQuestionIndex,
             duration: examInstanceDetail.duration,
+            examResultId: examInstanceDetail.examResultId,
             startTime: examInstanceDetail.startTime? Timestamp.fromDate(examInstanceDetail.startTime): null,
         };
     },
@@ -34,6 +35,7 @@ export const ExamInstanceDetailsConverter : FirestoreDataConverter<ExamInstanceD
             .withStatus(snapshot.get("status"))
             .withTotalQuestions(snapshot.get("totalQuestions"))
             .withCurrentQuestionIndex(snapshot.get("currentQuestionIndex"))
+            .withExamResultId(snapshot.get("examResultId"))
             .withDuration(snapshot.get("duration"));
         const questions:string[] = snapshot.get("questions");
         questions.forEach( (q) => {

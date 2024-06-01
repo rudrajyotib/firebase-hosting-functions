@@ -39,6 +39,9 @@ export const QuestionRepository = {
             .then((questionRef: FirebaseFirestore.DocumentReference<Question>)=>{
                 response.responseCode = 0;
                 response.data = questionRef.id;
+            })
+            .catch((e)=>{
+                console.error("Error adding question in repository ", e);
             });
         return response;
     },

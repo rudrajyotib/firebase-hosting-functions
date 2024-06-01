@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-
+import functions = require("firebase-functions")
 /* eslint-disable require-jsdoc */
 export class ExamInstanceDetail {
     id: string;
@@ -16,6 +16,7 @@ export class ExamInstanceDetail {
     totalQuestions: number;
     currentQuestionIndex: number;
     duration: number;
+    examResultId: string;
 
     constructor(id: string,
         examineeId: string,
@@ -30,6 +31,7 @@ export class ExamInstanceDetail {
         duration: number,
         totalQuestions: number,
         currentQuestionIndex: number,
+        examResultId: string,
         startTime?: Date ) {
         this.id = id;
         this.examineeId = examineeId;
@@ -45,11 +47,13 @@ export class ExamInstanceDetail {
         this.totalQuestions = totalQuestions;
         this.currentQuestionIndex = currentQuestionIndex;
         this.duration = duration;
+        this.examResultId = examResultId;
     }
 
     getSecondsRemaining = ()=>{
         if (this.status === "InProgress" && this.startTime) {
             const passedSeconds = (new Date().getUTCSeconds() - this.startTime.getUTCSeconds());
+            functions.logger.log("Passed seconds::" + passedSeconds+"::Duration::"+this.duration+"::Start time::"+this.startTime+"Now::"+new Date());
             return this.duration - passedSeconds;
         }
         return -1;
@@ -103,6 +107,7 @@ export class ExamInstanceDetailBuilder {
     totalQuestions = 0;
     currentQuestionIndex = -1;
     duration = -1;
+    examResultId = "";
 
     withId = (id:string) => {
         this.id = id;
@@ -179,6 +184,11 @@ export class ExamInstanceDetailBuilder {
         return this;
     };
 
+    withExamResultId = (examResultId: string) => {
+        this.examResultId = examResultId;
+        return this;
+    };
+
     build = () => new ExamInstanceDetail(this.id,
         this.examineeId,
         this.subject,
@@ -192,6 +202,7 @@ export class ExamInstanceDetailBuilder {
         this.duration,
         this.totalQuestions,
         this.currentQuestionIndex,
+        this.examResultId,
         this.startTime);
 }
 

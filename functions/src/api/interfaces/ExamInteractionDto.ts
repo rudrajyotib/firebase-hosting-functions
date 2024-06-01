@@ -1,10 +1,17 @@
 /* eslint-disable max-len */
-export type Question = {
-    displayFormat: string,
-    questionLines: string[],
-    options: string[],
+// export type Question = {
+//     displayFormat: string,
+//     questionLines: string[],
+//     options: string[],
+// }
+export type CreateQuestionRequest = {
+    format: string;
+    questionLines : string[];
+    options: string[];
+    correctOptionIndex : number;
+    organiserId: string;
+    tags: string[];
 }
-
 export type SubmitAnswerRequest = {
     questionId: string,
     answer: number,
@@ -43,8 +50,29 @@ export type QuestionWithId = {
     id: string
 }
 export type ApiSubmitAnswerResponse = {
-    responseCode: number,
     allAnswered: boolean,
     nextQuestion?: QuestionWithId,
     secondsRemaining: number
 }
+export type EvaluateRequest = {
+    examineeId: string,
+    examInstanceId: string
+}
+export type ApiEvaluateResponse = {
+    evaluationAccepted: boolean,
+    evaluationRejectionReason ?: string
+}
+export type AnswerAttempt = {
+    questionId: string,
+    correctAnswerIndex: string,
+    attemptedAnswerIndex: string
+}
+export type ExamResultResponse = {
+    examineeId: string,
+    examInstanceId: string,
+    totalMarks: number,
+    marksScrore: number,
+    answers: AnswerAttempt[]
+}
+
+
