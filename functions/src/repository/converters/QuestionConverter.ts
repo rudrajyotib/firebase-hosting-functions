@@ -12,6 +12,7 @@ export const QuestionConverter: FirestoreDataConverter<Question> = {
             status: question.status,
             orgainserId: question.organiserId,
             tags: question.tags,
+            topics: question.topics,
         });
     },
     fromFirestore: function(questionSnapshot: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>): Question {
@@ -24,6 +25,7 @@ export const QuestionConverter: FirestoreDataConverter<Question> = {
         const questionLines: string[] = questionSnapshot.get("questionLines");
         const options: string[] = questionSnapshot.get("options");
         const tags: string[] = questionSnapshot.get("tags");
+        const topics: string[] = questionSnapshot.get("topics");
         questionLines.forEach((line)=>{
             questionBuilder.withQuestionLine(line);
         } );
@@ -32,6 +34,9 @@ export const QuestionConverter: FirestoreDataConverter<Question> = {
         } );
         tags.forEach((tag)=>{
             questionBuilder.withTag(tag);
+        } );
+        topics.forEach((topic)=>{
+            questionBuilder.withTag(topic);
         } );
         if ("Inactive" === questionSnapshot.get("status")) {
             questionBuilder.markInactive();

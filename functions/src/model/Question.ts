@@ -8,6 +8,7 @@ export class Question {
     status: string;
     organiserId: string;
     tags: string[];
+    topics: string[];
 
     constructor(format: string,
         questionLines: string[],
@@ -16,7 +17,8 @@ export class Question {
         id: string,
         status: string,
         organiserId: string,
-        tags: string[]) {
+        tags: string[],
+        topics: string[]) {
         this.format = format;
         this.questionLines = questionLines;
         this.options = options;
@@ -25,10 +27,10 @@ export class Question {
         this.status = status;
         this.organiserId = organiserId;
         this.tags = tags;
+        this.topics = topics;
     }
 
     isValid = (): boolean => {
-        console.log("Qeustion to validate", JSON.stringify(this));
         if (
             !this.format ||
             this.format === "" ||
@@ -59,6 +61,7 @@ export class QuestionBuilder {
     status= "Active";
     organiserId = "";
     tags: string[] = [];
+    topics: string[] = [];
 
     withFormat= (format: string) => {
         this.format = format;
@@ -100,6 +103,11 @@ export class QuestionBuilder {
         return this;
     };
 
+    withSubjectAndTopicId = (topicId: string) => {
+        this.topics.push(topicId);
+        return this;
+    };
+
     build = ()=>{
         return new Question(
             this.format,
@@ -109,7 +117,8 @@ export class QuestionBuilder {
             this.id,
             this.status,
             this.organiserId,
-            this.tags
+            this.tags,
+            this.topics,
         );
     };
 }

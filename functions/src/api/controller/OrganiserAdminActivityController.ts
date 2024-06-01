@@ -8,7 +8,7 @@ import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopic
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
-import {CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
+import {CorrelateQuestionAndTopicRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
 import {Question, QuestionBuilder} from "../../model/Question";
 
 
@@ -242,6 +242,34 @@ export const CreateQuestion =
             })
             .catch((e)=>{
                 console.error("Error creating question in controller", e);
+                res.status(500).send();
+            });
+    };
+export const CorrelateQuestionAndSubjectTopic =
+    async (req: Request, res: Response) => {
+        const correlateQuestionAndTopicRequest: CorrelateQuestionAndTopicRequest =
+            req.body as CorrelateQuestionAndTopicRequest;
+        if (!correlateQuestionAndTopicRequest.questionId ||
+            correlateQuestionAndTopicRequest.questionId === "" ||
+            !correlateQuestionAndTopicRequest.subjectAndTopicId ||
+            correlateQuestionAndTopicRequest.subjectAndTopicId === ""
+        ) {
+            res.status(400).send();
+            return;
+        }
+        ExamAdminService.relateQuestionAndTopic(correlateQuestionAndTopicRequest.questionId,
+            correlateQuestionAndTopicRequest.subjectAndTopicId)
+            .then((serviceResponse: ServiceResponse<string>)=>{
+                if (serviceResponse.responseCode === 0) {
+                    res.status(201).send();
+                } else if (serviceResponse.responseCode > 0) {
+                    res.status(400).send();
+                } else {
+                    res.status(500).send();
+                }
+            })
+            .catch((e)=>{
+                console.error("Error in correlating question and topic,", e);
                 res.status(500).send();
             });
     };

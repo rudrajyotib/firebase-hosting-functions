@@ -74,5 +74,8 @@ export type ExamResultResponse = {
     marksScrore: number,
     answers: AnswerAttempt[]
 }
-
+export type CorrelateQuestionAndTopicRequest = {
+    questionId: string,
+    subjectAndTopicId: string
+}
 

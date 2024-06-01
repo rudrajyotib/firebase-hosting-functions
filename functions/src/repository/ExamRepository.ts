@@ -561,5 +561,57 @@ export const ExamRepository = {
             });
         return response;
     },
+    existsSubjectAndTopic: async (subjectAndTopicId: string): Promise<RepositoryResponse<boolean>> =>{
+        const response: RepositoryResponse<boolean> = {responseCode: -1, data: false};
+        await repository.collection("SubjectAndTopic")
+            .doc(subjectAndTopicId)
+            .get()
+            .then((data)=>{
+                if (data.exists) {
+                    response.data = true;
+                    response.responseCode = 0;
+                }
+            })
+            .catch((err)=>{
+                console.error("Error in repository querying for Subject and topic", err);
+                response.responseCode=1;
+            });
+        return response;
+    },
+    addQuestionIdToSubjectAndTopic: async (questionId: string, subjectAndTopicId: string): Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: -1};
+        const subjectAndTopicRef: FirebaseFirestore.DocumentReference<SubjectAndTopic> =
+            repository.collection("SubjectAndTopic").withConverter(SubjectAndTopicConverter).doc(subjectAndTopicId);
+        const subjectAndTopicDoc: FirebaseFirestore.DocumentSnapshot<SubjectAndTopic> = await subjectAndTopicRef.get();
+        if (!subjectAndTopicDoc.exists) {
+            response.responseCode = 1;
+            response.data = "SubjectAndTopicId is not valid";
+            return response;
+        }
+        const subjectAndTopic: SubjectAndTopic | undefined = subjectAndTopicDoc.data();
+        if (subjectAndTopic === undefined) {
+            response.responseCode = 2;
+            response.data = "Subject and topic could not be retrieved";
+            return response;
+        }
+        const questionInTopic = subjectAndTopic.questionIds.find((val)=>{
+            return (val.id === questionId);
+        });
+        if (questionInTopic && questionInTopic !== undefined) {
+            response.responseCode = 0;
+            response.data= "QuestionId already included in topic";
+            return response;
+        }
+        subjectAndTopic.questionIds.push({id: questionId, active: true});
+        await subjectAndTopicRef.set(subjectAndTopic, {mergeFields: ["questionIds"]})
+            .then(()=>{
+                response.responseCode= 0;
+            })
+            .catch(()=>{
+                response.responseCode= -1;
+                response.data = "Error updating subjectAndTopicId to organiser";
+            });
+        return response;
+    },
 
 };

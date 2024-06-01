@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/* eslint-disable-next-line max-len */
 import {ExamTemplate} from "../model/ExamTemplate";
 import {Organiser} from "../model/Organiser";
 import {Question} from "../model/Question";
@@ -216,7 +217,6 @@ export const ExamAdminService = {
         return serviceResponse;
     },
     addQuestion: async (question: Question) => {
-        // eslint-disable-next-line max-len
         const serviceResponse: ServiceResponse<string> = {
             responseCode: -1,
         };
@@ -246,4 +246,50 @@ export const ExamAdminService = {
         serviceResponse.responseCode = 0;
         return serviceResponse;
     },
+    relateQuestionAndTopic:
+        async (questionId: string, subjectAndTopicId: string) : Promise<ServiceResponse<string>>=>{
+            const serviceResponse: ServiceResponse<string> = {
+                responseCode: -1,
+            };
+            const questionExists: RepositoryResponse<boolean> = await QuestionRepository.existQuestion(questionId);
+            if (questionExists.responseCode !== 0 ||
+                !questionExists.data ||
+                questionExists.data !== true
+            ) {
+                serviceResponse.responseCode = 1;
+                serviceResponse.data = "QuestionId is not valid";
+                return serviceResponse;
+            }
+            const subjectAndTopicExists: RepositoryResponse<boolean> = await ExamRepository.existsSubjectAndTopic(subjectAndTopicId);
+            if (subjectAndTopicExists.responseCode !== 0 ||
+                !subjectAndTopicExists.data ||
+                subjectAndTopicExists.data !== true
+            ) {
+                serviceResponse.responseCode = 1;
+                serviceResponse.data = "SubjectAndTopicId is not valid";
+                return serviceResponse;
+            }
+            const updateQuestionResponse: RepositoryResponse<string> =
+                await QuestionRepository.addTopicIdToQuestion(questionId, subjectAndTopicId);
+            if (updateQuestionResponse.responseCode > 0 ) {
+                serviceResponse.responseCode = 1;
+                return serviceResponse;
+            }
+            if (updateQuestionResponse.responseCode < 0 ) {
+                serviceResponse.responseCode = -1;
+                return serviceResponse;
+            }
+            const updateSubjectAndTopicResponse: RepositoryResponse<string> =
+                await ExamRepository.addQuestionIdToSubjectAndTopic(questionId, subjectAndTopicId);
+            if (updateSubjectAndTopicResponse.responseCode > 0 ) {
+                serviceResponse.responseCode = 1;
+                return serviceResponse;
+            }
+            if (updateSubjectAndTopicResponse.responseCode < 0 ) {
+                serviceResponse.responseCode = -1;
+                return serviceResponse;
+            }
+            serviceResponse.responseCode = 0;
+            return serviceResponse;
+        },
 };
