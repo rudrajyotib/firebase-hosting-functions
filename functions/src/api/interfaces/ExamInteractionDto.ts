@@ -11,12 +11,14 @@ export type CreateQuestionRequest = {
     correctOptionIndex : number;
     organiserId: string;
     tags: string[];
+    questionId: string;
 }
 export type SubmitAnswerRequest = {
     questionId: string,
     answer: number,
     examInstanceId: string,
-    examineeId: string
+    examineeId: string,
+    questionIndex: number,
 }
 export type StartExamRequest = {
     examId: string,
@@ -31,7 +33,8 @@ export type StartExamResponse = {
 export type ResponseQuestionBody = {
     displayFormat: string,
     questionLines: string[],
-    options: string[]
+    options: string[],
+    questionId: string,
 }
 export type ActiveExamQueryResponseList = ActiveExamQueryResponseDefinition[]
 export type ActiveExamQueryResponseDefinition = {
@@ -78,4 +81,12 @@ export type CorrelateQuestionAndTopicRequest = {
     questionId: string,
     subjectAndTopicId: string
 }
-
+export type CreateExamInstanceRequest = {
+    examineeId: string,
+    organiserId: string,
+    examTemplateId: string,
+}
+export type AddExamineeRequest = {
+    name: string,
+    email: string,
+}

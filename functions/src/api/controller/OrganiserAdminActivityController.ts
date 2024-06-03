@@ -8,8 +8,9 @@ import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopic
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
-import {CorrelateQuestionAndTopicRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
+import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
 import {Question, QuestionBuilder} from "../../model/Question";
+import {ExamineeBuilder} from "../../model/Examinee";
 
 
 export const AddOrganiser =
@@ -270,6 +271,60 @@ export const CorrelateQuestionAndSubjectTopic =
             })
             .catch((e)=>{
                 console.error("Error in correlating question and topic,", e);
+                res.status(500).send();
+            });
+    };
+export const CreateExamInstance =
+    async (req: Request, res: Response) => {
+        const createExamInstanceRequest: CreateExamInstanceRequest =
+            req.body as CreateExamInstanceRequest;
+        if (!createExamInstanceRequest.examTemplateId ||
+            createExamInstanceRequest.examTemplateId === "" ||
+            !createExamInstanceRequest.examineeId ||
+            createExamInstanceRequest.examineeId === "" ||
+            !createExamInstanceRequest.organiserId ||
+            createExamInstanceRequest.organiserId === ""
+        ) {
+            res.status(400).send();
+        }
+        ExamAdminService.createExamInstance(createExamInstanceRequest.examineeId,
+            createExamInstanceRequest.organiserId,
+            createExamInstanceRequest.examTemplateId)
+            .then((serviceResponse: ServiceResponse<string>)=>{
+                if (serviceResponse.responseCode > 0 ) {
+                    res.status(400).send();
+                } else if (serviceResponse.responseCode < 0) {
+                    res.status(500).send();
+                } else {
+                    res.status(201).send();
+                }
+            })
+            .catch((e)=>{
+                console.error("Create exam instance controller failed,", e);
+                res.status(500).send();
+            });
+    };
+export const AddExaminee =
+    async (req: Request, res: Response) => {
+        const addExamineeRequest: AddExamineeRequest =
+            req.body as AddExamineeRequest;
+        const examineeBuilder: ExamineeBuilder =
+            new ExamineeBuilder()
+                .withName(addExamineeRequest.name)
+                .withEmail(addExamineeRequest.email);
+
+        ExamAdminService.addExaminee(examineeBuilder.build())
+            .then((serviceResponse: ServiceResponse<string>)=>{
+                if (serviceResponse.responseCode === 0) {
+                    res.status(201).send();
+                } else if (serviceResponse.responseCode > 0 ) {
+                    res.status(400).send();
+                } else {
+                    res.status(500).send();
+                }
+            })
+            .catch((e)=>{
+                console.error("Controller got error creating new examinee", e);
                 res.status(500).send();
             });
     };

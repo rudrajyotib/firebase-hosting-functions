@@ -46,6 +46,10 @@ export class ExamInstanceState {
         }
         return -1;
     };
+
+    isLastQuestion = () => {
+        return this.currentQuestionIndex === (this.totalQuestions - 1);
+    };
 }
 
 export class ExamInstanceStateBuilder {

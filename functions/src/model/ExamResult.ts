@@ -33,6 +33,17 @@ export class ExamResult {
         return [];
     };
 
+    markAnswer = (questionId: string, attemptedAnswer: number) => {
+        this.questionsAndAnswers
+            .filter((qna)=>{
+                return qna.questionId === questionId;
+            })
+            .forEach((qna)=>{
+                qna.givenAnswerIndex = attemptedAnswer;
+                qna.status = "Answered";
+            });
+    };
+
     evaluate = () =>{
         let tempScore = 0;
         this.questionsAndAnswers.forEach((value)=>{

@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
 
-import {ExamInstanceDetail} from "./ExamInstanceDetail";
 
 // eslint-disable-next-line require-jsdoc
 export class Examinee {
@@ -9,27 +8,39 @@ export class Examinee {
     name: string;
     email: string;
     status: string;
-    assignedExams?: ExamInstanceDetail[];
+    assignedExams: {id: string, status: string}[];
 
     constructor(
         id: string,
         name: string,
         email: string,
         status: string,
-        assignedExams ?: ExamInstanceDetail[]) {
+        assignedExams : {id: string, status: string}[]) {
         this.id = id;
         this.email = email;
         this.name = name;
         this.status = status;
         this.assignedExams = assignedExams;
     }
+
+    assignExamInstance = (examInstanceId: string) => {
+        this.assignedExams.push({id: examInstanceId, status: "Ready"});
+    };
+
+    updateAssignedExamStatus = (examInstanceId: string, status: string) => {
+        this.assignedExams.filter((exam)=>{
+            return exam.id === examInstanceId;
+        }).forEach((exam)=>{
+            exam.status = status;
+        });
+    };
 }
 
 export class ExamineeBuilder {
     id = "";
     name = "";
     email = "";
-    assignedExams: ExamInstanceDetail[] = [];
+    assignedExams: {id: string, status: string}[] = [];
     status = "";
 
     withId = (id: string) => {
@@ -52,9 +63,13 @@ export class ExamineeBuilder {
         return this;
     };
 
-    withAssignedExam = (assignedExam: ExamInstanceDetail) =>{
-        this.assignedExams.push(assignedExam);
+    withAssignedExam = (assignedExam: string) =>{
+        this.assignedExams.push({id: assignedExam, status: "Ready"});
         return this;
+    };
+
+    withAssignedExamAndStatus = (assignedExam: string, status: string) => {
+        this.assignedExams.push({id: assignedExam, status: status});
     };
 
     build = ():Examinee => {

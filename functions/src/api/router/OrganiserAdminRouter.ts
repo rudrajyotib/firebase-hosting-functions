@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 /* eslint-disable new-cap */
 import express = require("express")
-import {AddExamIdsToOrganiser, AddOrganiser, AddSyllabus, AddSyllabusIdsToOrganiser, AddTopicsToSyllabus, CorrelateQuestionAndSubjectTopic, CreateExamTemplate, CreateQuestion, CreateSubjectAndTopic} from "../controller/OrganiserAdminActivityController";
+import {AddExamIdsToOrganiser, AddExaminee, AddOrganiser, AddSyllabus, AddSyllabusIdsToOrganiser, AddTopicsToSyllabus, CorrelateQuestionAndSubjectTopic, CreateExamInstance, CreateExamTemplate, CreateQuestion, CreateSubjectAndTopic} from "../controller/OrganiserAdminActivityController";
 const organiserAdminRouter = express.Router();
 
 organiserAdminRouter.post("/add", AddOrganiser);
@@ -13,5 +13,7 @@ organiserAdminRouter.post("/addexamtemplate", CreateExamTemplate);
 organiserAdminRouter.post("/addsubjectandtopic", CreateSubjectAndTopic);
 organiserAdminRouter.post("/addquestion", CreateQuestion);
 organiserAdminRouter.post("/correlatequestionandtopic", CorrelateQuestionAndSubjectTopic);
+organiserAdminRouter.post("/createexaminstance", CreateExamInstance);
+organiserAdminRouter.post("/addexaminee", AddExaminee);
 
 export {organiserAdminRouter};

@@ -5,7 +5,6 @@ import functions = require("firebase-functions")
 import {ExamRepository} from "../../repository/ExamRepository";
 import {ExamInstanceSummary} from "../../model/ExamInstanceSummary";
 import {ActiveExamQueryResponseDefinition, ApiSubmitAnswerResponse, EvaluateRequest, ResponseQuestionBody, StartExamResponse, SubmitAnswerRequest} from "../interfaces/ExamInteractionDto";
-import {RepositoryResponse} from "../../repository/data/RepositoryResponse";
 import {ExamInstanceState} from "../../model/ExamInstanceState";
 import {ApiResponse} from "../interfaces/ApiResponse";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
@@ -51,6 +50,7 @@ export const StartExam =
                     displayFormat: serviceResponse.data.nextQuestion.format,
                     questionLines: serviceResponse.data.nextQuestion.questionLines,
                     options: serviceResponse.data.nextQuestion.options,
+                    questionId: serviceResponse.data.nextQuestion.id,
                 };
                 const startExamResponse: StartExamResponse = {
                     nextQuestion: nextQuestion,
@@ -64,50 +64,51 @@ export const StartExam =
         res.status(200).json(apiResponse);
     };
 
-export const AnswerQuestion =
+export const AnswerQuestionAndMoveNext =
     async (req: Request, res: Response) => {
         const submitAnswerRequest: SubmitAnswerRequest = req.body;
-        const repositoryResponse: RepositoryResponse<ExamInstanceState> = await
-        ExamRepository.answerQuestion(submitAnswerRequest);
+        const serviceResponse: ServiceResponse<ExamInstanceState> =
+            await ExamService.submitAnswerAndMoveNext(submitAnswerRequest);
         const apiResponse: ApiResponse<ApiSubmitAnswerResponse> = {
             responseCode: -1,
         };
         let responseStatus = 200;
-        if (repositoryResponse.responseCode === 0 ) {
-            if (repositoryResponse.data) {
-                if (repositoryResponse.data.nextQuestion) {
+        if (serviceResponse.responseCode === 0 ) {
+            if (serviceResponse.data) {
+                if (serviceResponse.data.nextQuestion) {
                     apiResponse.responseCode = 0;
                     const nextQuestion: ResponseQuestionBody = {
-                        displayFormat: repositoryResponse.data.nextQuestion.format,
-                        questionLines: repositoryResponse.data.nextQuestion.questionLines,
-                        options: repositoryResponse.data.nextQuestion.options,
+                        displayFormat: serviceResponse.data.nextQuestion.format,
+                        questionLines: serviceResponse.data.nextQuestion.questionLines,
+                        options: serviceResponse.data.nextQuestion.options,
+                        questionId: serviceResponse.data.nextQuestion.id,
                     };
-                    const startExamResponse: ApiSubmitAnswerResponse = {
+                    const answerQuestionResponse: ApiSubmitAnswerResponse = {
                         nextQuestion: {
                             question: nextQuestion,
-                            id: repositoryResponse.data.nextQuestion.id,
+                            id: serviceResponse.data.nextQuestion.id,
                         },
                         allAnswered: false,
-                        secondsRemaining: repositoryResponse.data.getRemainingSeconds(),
+                        secondsRemaining: serviceResponse.data.getRemainingSeconds(),
                     };
-                    apiResponse.data = startExamResponse;
+                    apiResponse.data = answerQuestionResponse;
                 }
             } else {
                 responseStatus = 500;
             }
-        } else if (repositoryResponse.responseCode === 1) {
+        } else if (serviceResponse.responseCode === 1) {
             const startExamResponse: ApiSubmitAnswerResponse = {
                 allAnswered: true,
                 secondsRemaining: 0,
             };
             apiResponse.responseCode = 0;
             apiResponse.data = startExamResponse;
-        } else if (repositoryResponse.responseCode === 5 || repositoryResponse.responseCode === 7 || repositoryResponse.responseCode === 9) {
+        } else if (serviceResponse.responseCode === 5 || serviceResponse.responseCode === 7 || serviceResponse.responseCode === 9) {
             responseStatus = 500;
-            apiResponse.responseCode = repositoryResponse.responseCode;
+            apiResponse.responseCode = serviceResponse.responseCode;
         } else {
             responseStatus = 400;
-            apiResponse.responseCode = repositoryResponse.responseCode;
+            apiResponse.responseCode = serviceResponse.responseCode;
         }
 
         res.status(responseStatus).json(apiResponse);

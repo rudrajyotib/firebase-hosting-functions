@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-import functions = require("firebase-functions")
 /* eslint-disable require-jsdoc */
 export class ExamInstanceDetail {
     id: string;
@@ -53,7 +52,6 @@ export class ExamInstanceDetail {
     getSecondsRemaining = ()=>{
         if (this.status === "InProgress" && this.startTime) {
             const passedSeconds = (new Date().getUTCSeconds() - this.startTime.getUTCSeconds());
-            functions.logger.log("Passed seconds::" + passedSeconds+"::Duration::"+this.duration+"::Start time::"+this.startTime+"Now::"+new Date());
             return this.duration - passedSeconds;
         }
         return -1;
@@ -71,24 +69,45 @@ export class ExamInstanceDetail {
         return (this.status === "InProgress" && this.getSecondsRemaining() > 0);
     };
 
-    answerQuestionAndMoveToNext = (questionId: string, answer: number ) =>{
-        if (this.questions[this.currentQuestionIndex] !== questionId) {
-            return -1;
-        }
-        if (answer < 0) {
-            return -2;
-        }
-        this.answers.push(answer);
-        if (this.currentQuestionIndex === (this.totalQuestions-1)) {
-            this.status = "AllAnswered";
-            return 1;
-        }
-        this.currentQuestionIndex = this.currentQuestionIndex+1;
-        return 0;
-    };
-
     isExamOver = () => {
         return (this.status === "AllAnswered" || this.getSecondsRemaining()<0 );
+    };
+
+    moveToNetQuestion = (): boolean =>{
+        if (!this.isExamOver) {
+            if (this.currentQuestionIndex < (this.totalQuestions - 1)) {
+                ++this.currentQuestionIndex;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    isAtLastQuestion = (): boolean =>{
+        return this.currentQuestionIndex === (this.questions.length - 1);
+    };
+
+    recordAnswerAndmoveToNextQuestion = (questionId: string, answerOption: number, questionIndex: number): boolean =>{
+        if (answerOption < 0 ) {
+            return false;
+        }
+        if (questionIndex>=this.questions.length) {
+            return false;
+        }
+        if (this.questions[questionIndex] !== questionId) {
+            return false;
+        }
+        if (!this.isExamOver()) {
+            if (this.questions[this.currentQuestionIndex] !== questionId) {
+                return false;
+            }
+            this.answers[this.currentQuestionIndex] = answerOption;
+            if (this.currentQuestionIndex < (this.questions.length - 1)) {
+                ++this.currentQuestionIndex;
+            }
+            return true;
+        }
+        return false;
     };
 }
 

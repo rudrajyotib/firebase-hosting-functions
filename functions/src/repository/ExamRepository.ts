@@ -161,15 +161,88 @@ export const ExamRepository = {
                 response.data = data.id;
                 response.responseCode = 0;
             })
-            .catch(() => {
+            .catch((e) => {
+                console.error("Error creating new examinee", e);
                 response.responseCode = -1;
                 response.data = "";
             });
         return response;
     },
 
-    answerQuestion: async (submitAnswerRequest: SubmitAnswerRequest): Promise<RepositoryResponse<ExamInstanceState>> => {
-        const repositoryResponse: RepositoryResponse<ExamInstanceState> = {
+    addExamInstanceToExaminee: async (examineeId: string, examInstanceId: string): Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: -1, data: ""};
+        const examineeRef: FirebaseFirestore.DocumentReference<Examinee> = repository.collection("Examinee")
+            .withConverter(ExamineeConverter)
+            .doc(examineeId);
+        const examineeDoc: FirebaseFirestore.DocumentSnapshot<Examinee> = await examineeRef.get();
+        if (!examineeDoc.exists) {
+            response.responseCode = 1;
+            return response;
+        }
+        const examinee = examineeDoc.data();
+        if (examinee === undefined) {
+            console.error("ExamRepository.addExamInstanceToExaminee::Could not get any data for Examinee from "+
+                "Data store for ExamineeId:"+examineeId
+            );
+            response.responseCode = -1;
+            return response;
+        }
+        examinee.assignExamInstance(examInstanceId);
+        const updateResult =await examineeRef.set(examinee, {mergeFields: ["examInstances"]})
+            .then(()=>{
+                return 0;
+            })
+            .catch((e)=>{
+                console.error("ExamRepository.addExamInstanceToExaminee::Error updating exam instance to examineeId:"+
+                +examineeId+":", e);
+                return -1;
+            });
+        if (updateResult === 0) {
+            response.responseCode = 0;
+            return response;
+        }
+        response.responseCode = -1;
+        return response;
+    },
+
+    updateExamStatusForExaminee: async (examineeId: string, examInstanceId: string, status: string): Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: -1, data: ""};
+        const examineeRef: FirebaseFirestore.DocumentReference<Examinee> = repository.collection("Examinee")
+            .withConverter(ExamineeConverter)
+            .doc(examineeId);
+        const examineeDoc: FirebaseFirestore.DocumentSnapshot<Examinee> = await examineeRef.get();
+        if (!examineeDoc.exists) {
+            response.responseCode = 1;
+            return response;
+        }
+        const examinee = examineeDoc.data();
+        if (examinee === undefined) {
+            console.error("ExamRepository.updateExamStatusForExaminee::Could not get any data for Examinee from "+
+                "Data store for ExamineeId:"+examineeId
+            );
+            response.responseCode = -1;
+            return response;
+        }
+        examinee.updateAssignedExamStatus(examInstanceId, status);
+        const updateResult =await examineeRef.set(examinee, {mergeFields: ["examInstances"]})
+            .then(()=>{
+                return 0;
+            })
+            .catch((e)=>{
+                console.error("ExamRepository.updateExamStatusForExaminee::Error updating exam instance to examineeId:"+
+                +examineeId+":", e);
+                return -1;
+            });
+        if (updateResult === 0) {
+            response.responseCode = 0;
+            return response;
+        }
+        response.responseCode = -1;
+        return response;
+    },
+
+    recordAnswerAndMoveNext: async (submitAnswerRequest: SubmitAnswerRequest): Promise<RepositoryResponse<ExamInstanceDetail>> => {
+        const repositoryResponse: RepositoryResponse<ExamInstanceDetail> = {
             responseCode: -1,
         };
         if ((submitAnswerRequest.examineeId === undefined || submitAnswerRequest.examineeId === "") ||
@@ -179,11 +252,10 @@ export const ExamRepository = {
             repositoryResponse.responseCode = 1;
             return repositoryResponse;
         }
-        const examInstanceStateBuilder: ExamInstanceStateBuilder = new ExamInstanceStateBuilder();
-        examInstanceStateBuilder.withExamInstanceId(submitAnswerRequest.examInstanceId);
-        examInstanceStateBuilder.withExamineeId(submitAnswerRequest.examineeId);
         const examInstanceRef: FirebaseFirestore.DocumentReference<ExamInstanceDetail> =
-            repository.collection("ExamInstance").withConverter(ExamInstanceDetailsConverter).doc(submitAnswerRequest.examInstanceId);
+            repository.collection("ExamInstance")
+                .withConverter(ExamInstanceDetailsConverter)
+                .doc(submitAnswerRequest.examInstanceId);
         const examInstanceDoc: FirebaseFirestore.DocumentSnapshot<ExamInstanceDetail> = await examInstanceRef.get();
         if (!examInstanceDoc.exists) {
             repositoryResponse.responseCode = 2;
@@ -191,66 +263,51 @@ export const ExamRepository = {
         }
         const examInstanceDetail = examInstanceDoc.data();
         if (examInstanceDetail === undefined) {
-            repositoryResponse.responseCode = 2;
+            repositoryResponse.responseCode = -1;
+            return repositoryResponse;
+        }
+        if (!examInstanceDetail.examResultId || examInstanceDetail.examResultId === "") {
+            repositoryResponse.responseCode = -2;
+            console.error("Exam repository cannot record answer for ExamInstance:"+submitAnswerRequest.examInstanceId+
+                ": as ResultId is missing"
+            );
             return repositoryResponse;
         }
         if (submitAnswerRequest.examineeId !== examInstanceDetail.examineeId) {
             repositoryResponse.responseCode = 3;
             return repositoryResponse;
         }
-        functions.logger.log("Status::" + examInstanceDetail.status + "SecondsRemaining::" + examInstanceDetail.getSecondsRemaining());
         if (!examInstanceDetail.isInProgress()) {
             repositoryResponse.responseCode = 4;
             return repositoryResponse;
         }
-        const answerUpdate = examInstanceDetail.answerQuestionAndMoveToNext(submitAnswerRequest.questionId,
-            submitAnswerRequest.answer);
-        functions.logger.debug("After answer:", examInstanceDetail);
-        if (answerUpdate < 0) {
+        const answerUpdate: boolean = examInstanceDetail.recordAnswerAndmoveToNextQuestion(submitAnswerRequest.questionId,
+            submitAnswerRequest.answer, submitAnswerRequest.questionIndex);
+        if (answerUpdate !== true) {
             repositoryResponse.responseCode = 5;
             return repositoryResponse;
         }
-        const update = await examInstanceRef.set(examInstanceDetail, {
+        if (!examInstanceDetail.startTime) {
+            repositoryResponse.responseCode = 6;
+            return repositoryResponse;
+        }
+        const examInstanceUpdate = await examInstanceRef.set(examInstanceDetail, {
             merge: true,
         }).then(() => {
             return 0;
         }).catch((e) => {
-            functions.logger.error("Repository failed to update exam Instace", e);
+            console.error("Repository failed to update exam Instace", e);
             return 1;
         });
-        if (update != 0) {
-            repositoryResponse.responseCode = 7;
+        if (examInstanceUpdate != 0) {
+            repositoryResponse.responseCode = -1;
             return repositoryResponse;
         }
-        if (answerUpdate === 1) {
-            repositoryResponse.responseCode = 1;
-            examInstanceStateBuilder.withStatus("AllAnswered");
-            examInstanceStateBuilder.withDuration(0);
-            repositoryResponse.data = examInstanceStateBuilder.build();
-        }
-        if (answerUpdate === 0) {
-            const nextQuestionId: string = examInstanceDetail.questions[examInstanceDetail.currentQuestionIndex];
-            const questionFromRepo: RepositoryResponse<Question> = await QuestionRepository.getQuestion(nextQuestionId);
-            if (questionFromRepo.responseCode === 0) {
-                examInstanceStateBuilder.withStatus("InProgress");
-                examInstanceStateBuilder.withDuration(examInstanceDetail.duration);
-                if (examInstanceDetail.startTime) {
-                    examInstanceStateBuilder.withStartTime(examInstanceDetail.startTime);
-                }
-                examInstanceStateBuilder.withTotalQuestions(examInstanceDetail.totalQuestions);
-                examInstanceStateBuilder.withCurrentQuestionIndex(0);
-                if (questionFromRepo.data) {
-                    examInstanceStateBuilder.withNextQuestion(questionFromRepo.data);
-                }
-                repositoryResponse.responseCode = 0;
-                repositoryResponse.data = examInstanceStateBuilder.build();
-            } else {
-                repositoryResponse.responseCode = 9;
-            }
-        }
-
+        repositoryResponse.responseCode = 0;
+        repositoryResponse.data = examInstanceDetail;
         return repositoryResponse;
     },
+
     evaluate: async (evaluationRequest: EvaluateRequest) : Promise<RepositoryResponse<boolean>> => {
         const repositoryResponse: RepositoryResponse<boolean> = {
             responseCode: -1,
@@ -544,6 +601,25 @@ export const ExamRepository = {
             });
         return response;
     },
+    getExamTemplate: async (examTemplateId: string): Promise<RepositoryResponse<ExamTemplate>> =>{
+        const response: RepositoryResponse<ExamTemplate> = {responseCode: -1};
+        await repository.collection("Exam")
+            .withConverter(ExamTemplateConverter)
+            .doc(examTemplateId)
+            .get()
+            .then((data: FirebaseFirestore.DocumentSnapshot<ExamTemplate>) => {
+                if (data.exists) {
+                    response.data = data.data();
+                    response.responseCode = 0;
+                } else {
+                    response.responseCode = 1;
+                }
+            })
+            .catch(() => {
+                response.responseCode = -1;
+            });
+        return response;
+    },
     existsOrganiser: async (organiserId: string): Promise<RepositoryResponse<boolean>> =>{
         const response: RepositoryResponse<boolean> = {responseCode: -1, data: false};
         await repository.collection("Organiser")
@@ -574,6 +650,40 @@ export const ExamRepository = {
             })
             .catch((err)=>{
                 console.error("Error in repository querying for Subject and topic", err);
+                response.responseCode=1;
+            });
+        return response;
+    },
+    existsExaminee: async (examineeId: string): Promise<RepositoryResponse<boolean>> =>{
+        const response: RepositoryResponse<boolean> = {responseCode: -1, data: false};
+        await repository.collection("Examinee")
+            .doc(examineeId)
+            .get()
+            .then((data)=>{
+                if (data.exists) {
+                    response.data = true;
+                    response.responseCode = 0;
+                }
+            })
+            .catch((err)=>{
+                console.error("Error in repository querying for Examinee", err);
+                response.responseCode=1;
+            });
+        return response;
+    },
+    existsExamtemplate: async (examId: string): Promise<RepositoryResponse<boolean>> =>{
+        const response: RepositoryResponse<boolean> = {responseCode: -1, data: false};
+        await repository.collection("Exam")
+            .doc(examId)
+            .get()
+            .then((data)=>{
+                if (data.exists) {
+                    response.data = true;
+                    response.responseCode = 0;
+                }
+            })
+            .catch((err)=>{
+                console.error("Error in repository querying for Exam", err);
                 response.responseCode=1;
             });
         return response;
@@ -611,6 +721,55 @@ export const ExamRepository = {
                 response.responseCode= -1;
                 response.data = "Error updating subjectAndTopicId to organiser";
             });
+        return response;
+    },
+    createExamResult: async (examResult: ExamResult): Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: -1};
+        await repository.collection("ExamResult")
+            .withConverter(ExamResultConverter)
+            .add(examResult)
+            .then((data: FirebaseFirestore.DocumentReference<ExamResult>) => {
+                response.data = data.id;
+                response.responseCode = 0;
+            })
+            .catch((e) => {
+                console.error("Error creating exam result:", e);
+                response.responseCode = -1;
+            });
+        return response;
+    },
+    updateAnswerRecord: async (examResultId: string, questionId: string, answer: number)
+        : Promise<RepositoryResponse<string>> => {
+        const response: RepositoryResponse<string> = {responseCode: -1};
+        const resultRef: FirebaseFirestore.DocumentReference<ExamResult> = repository.collection("ExamResult")
+            .withConverter(ExamResultConverter)
+            .doc(examResultId);
+        const resultDoc: FirebaseFirestore.DocumentSnapshot<ExamResult> = await resultRef.get();
+        if (!resultDoc.exists) {
+            response.responseCode = 1;
+            return response;
+        }
+        const result = resultDoc.data();
+        if (result === undefined) {
+            console.error("ExamRepository.updateAnswerRecord::Could not load result data for id::"+examResultId);
+            response.responseCode = -1;
+            return response;
+        }
+        result.markAnswer(questionId, answer);
+        const resultUpdate = resultRef
+            .set(result, {mergeFields: ["questionAndAnswer"]})
+            .then(()=>{
+                return true;
+            })
+            .catch((e)=>{
+                console.error("Error updating ExamResult response::", e);
+                return false;
+            });
+        if (!resultUpdate) {
+            response.responseCode = -2;
+            return response;
+        }
+        response.responseCode = 0;
         return response;
     },
 
