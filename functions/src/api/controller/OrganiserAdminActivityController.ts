@@ -42,7 +42,6 @@ export const AddSyllabus =
             .withDuration(createSyllabusRequest.duration)
             .withStatus("Active")
             .withSubject(createSyllabusRequest.subject)
-            .withTotalMarks(createSyllabusRequest.totalMarks)
             .withTitle(createSyllabusRequest.title)
             .withOrganiserId(createSyllabusRequest.organiserId)
             .build();

@@ -24,7 +24,6 @@ export const SyllabusConverter : FirestoreDataConverter<Syllabus> = {
     fromFirestore: function(snapshot: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) {
         const syllabusBuilder: SyllabusBuilder = new SyllabusBuilder();
         syllabusBuilder.withSubject(snapshot.get("subject"));
-        syllabusBuilder.withTotalMarks(snapshot.get("totalMarks"));
         syllabusBuilder.withDuration(snapshot.get("duration"));
         syllabusBuilder.withStatus(snapshot.get("status"));
         syllabusBuilder.withTitle(snapshot.get("title"));

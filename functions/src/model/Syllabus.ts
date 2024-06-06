@@ -45,6 +45,29 @@ export class Syllabus {
         }
         return true;
     };
+
+    updateTotalMarks = () => {
+        let totalMarks = 0;
+        this.topicsAndQuestionCounts.forEach((topic)=> {
+            totalMarks += (topic.count * topic.weightage);
+        });
+        this.totalMarks = totalMarks;
+    };
+
+    addTopics = (topicsAndQuestionCount: TopicAndQuestionCount[]) => {
+        const map: Map<string, TopicAndQuestionCount> = new Map();
+        this.topicsAndQuestionCounts.forEach((topic)=>{
+            if (map.has(topic.subjectAndTopicId) === true ) {
+                map.set(topic.subjectAndTopicId, topic);
+            }
+        });
+        topicsAndQuestionCount.forEach((topic)=>{
+            if (map.has(topic.subjectAndTopicId) === false ) {
+                this.topicsAndQuestionCounts.push(topic);
+            }
+        });
+        this.updateTotalMarks();
+    };
 }
 
 export class SyllabusBuilder {
@@ -69,11 +92,7 @@ export class SyllabusBuilder {
 
     withTopicAndQuestionCounts = (topicAndQuestionCount: TopicAndQuestionCount) => {
         this.topicsAndQuestionCounts.push(topicAndQuestionCount);
-        return this;
-    };
-
-    withTotalMarks = (totalMarks: number) => {
-        this.totalMarks = totalMarks;
+        this.totalMarks += (topicAndQuestionCount.weightage * topicAndQuestionCount.count);
         return this;
     };
 

@@ -436,8 +436,8 @@ export const ExamRepository = {
             response.data = "SyllabusId could not be retrieved";
             return response;
         }
-        syllabus.topicsAndQuestionCounts = topicsAndQuestionsCounts;
-        await syllabusRef.set(syllabus)
+        syllabus.addTopics(topicsAndQuestionsCounts);
+        await syllabusRef.set(syllabus, {mergeFields: ["topicsAndQuestionCounts", "totalMarks"]})
             .catch(()=>{
                 response.responseCode= 3;
                 response.data = "Error updating topics to syllabus";
