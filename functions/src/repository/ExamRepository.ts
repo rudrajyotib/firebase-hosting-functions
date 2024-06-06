@@ -34,12 +34,11 @@ export const ExamRepository = {
             responseCode: -1,
             data: examInstances,
         };
-        functions.logger.log("Repository querying active exams for::", examineeId);
         await repository
             .collection("ExamInstance")
             .withConverter(ExamInstanceSummaryConverter)
             .where("examineeId", "==", examineeId)
-            .where("status", "==", "ready")
+            .where("status", "==", "Ready")
             .get()
             .then((snapshot: FirebaseFirestore.QuerySnapshot<ExamInstanceSummary>) => {
                 functions.logger.log("Found results::", snapshot.docs.length);

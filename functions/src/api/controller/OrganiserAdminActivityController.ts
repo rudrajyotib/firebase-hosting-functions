@@ -24,7 +24,7 @@ export const AddOrganiser =
         ExamAdminService.addOrganiser(organiser)
             .then((serviceRes: ServiceResponse<string>)=>{
                 if (serviceRes.responseCode === 0 ) {
-                    res.status(201).send();
+                    res.status(201).send({organiserId: serviceRes.data});
                 } else {
                     res.status(400).send();
                 }
@@ -54,7 +54,7 @@ export const AddSyllabus =
             .then((serviceRes: ServiceResponse<string>)=>{
                 console.log("Received response", serviceRes);
                 if (serviceRes.responseCode === 0 ) {
-                    res.status(201).send();
+                    res.status(201).send({syllabusId: serviceRes.data});
                 } else {
                     res.status(400).send();
                 }
@@ -149,7 +149,7 @@ export const CreateExamTemplate =
         ExamAdminService.addExamTemplate(examTemplate)
             .then((serviceResponse: ServiceResponse<string>) =>{
                 if (serviceResponse.responseCode === 0) {
-                    res.status(201).send();
+                    res.status(201).send({examTemplateId: serviceResponse.data});
                 } else if (serviceResponse.responseCode > 0) {
                     console.error("Service response data", serviceResponse.data);
                     res.status(400).send();
@@ -183,7 +183,7 @@ export const CreateSubjectAndTopic =
         ExamAdminService.addSubjectAndTopic(subjectAndTopic)
             .then((serviceResponse: ServiceResponse<string>) =>{
                 if (serviceResponse.responseCode === 0) {
-                    res.status(201).send();
+                    res.status(201).send({subjectId: serviceResponse.data});
                 } else if (serviceResponse.responseCode > 0) {
                     console.error("Service response data", serviceResponse.data);
                     res.status(400).send();
@@ -233,7 +233,7 @@ export const CreateQuestion =
         ExamAdminService.addQuestion(question)
             .then((serviceResponse: ServiceResponse<string>) =>{
                 if (serviceResponse.responseCode === 0) {
-                    res.status(201).send();
+                    res.status(201).send({questionId: serviceResponse.data});
                 } else if (serviceResponse.responseCode > 0) {
                     console.error("Service response data", serviceResponse.data);
                     res.status(400).send();
@@ -296,7 +296,7 @@ export const CreateExamInstance =
                 } else if (serviceResponse.responseCode < 0) {
                     res.status(500).send();
                 } else {
-                    res.status(201).send();
+                    res.status(201).send({examInstanceId: serviceResponse.data});
                 }
             })
             .catch((e)=>{
@@ -316,7 +316,7 @@ export const AddExaminee =
         ExamAdminService.addExaminee(examineeBuilder.build())
             .then((serviceResponse: ServiceResponse<string>)=>{
                 if (serviceResponse.responseCode === 0) {
-                    res.status(201).send();
+                    res.status(201).send({"examineeId": serviceResponse.data});
                 } else if (serviceResponse.responseCode > 0 ) {
                     res.status(400).send();
                 } else {

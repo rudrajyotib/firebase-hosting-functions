@@ -57,6 +57,7 @@ export const ExamAdminService = {
             serviceResponse.data = "Error adding SyllabusIds to organiser";
             return serviceResponse;
         }
+        serviceResponse.data = repositoryResponse.data;
         serviceResponse.responseCode = 0;
         return serviceResponse;
     },
@@ -177,6 +178,7 @@ export const ExamAdminService = {
             console.error("ExamId "+createExamTemplateRepositoryResponse.data+" could not be connected to organiser");
             return serviceResponse;
         }
+        serviceResponse.data = createExamTemplateRepositoryResponse.data;
         serviceResponse.responseCode = 0;
         return serviceResponse;
     },
@@ -197,26 +199,27 @@ export const ExamAdminService = {
             serviceResponse.responseCode = 2;
             return serviceResponse;
         }
-        const createExamTemplateRepositoryResponse : RepositoryResponse<string> = await ExamRepository.addSubjectAndTopic(subjectAndTopic);
-        if (createExamTemplateRepositoryResponse.responseCode !== 0) {
+        const createSubjectAndTopicRepositoryResponse : RepositoryResponse<string> = await ExamRepository.addSubjectAndTopic(subjectAndTopic);
+        if (createSubjectAndTopicRepositoryResponse.responseCode !== 0) {
             serviceResponse.responseCode = -1;
             serviceResponse.data = "Error creating exam subject and topic";
             return serviceResponse;
         }
-        if (!createExamTemplateRepositoryResponse.data) {
+        if (!createSubjectAndTopicRepositoryResponse.data) {
             serviceResponse.responseCode = -2;
             serviceResponse.data = "Repository could not create subject and topic";
             return serviceResponse;
         }
-        const addExamTemplateToOrganiserRepositoryResponse: RepositoryResponse<string> =
+        const addSubjectAndTopicToOrganiserRepositoryResponse: RepositoryResponse<string> =
             await ExamRepository.addSubjectAndTopicToOrganiser(subjectAndTopic.organiserId,
-                createExamTemplateRepositoryResponse.data);
-        if (addExamTemplateToOrganiserRepositoryResponse.responseCode != 0) {
+                createSubjectAndTopicRepositoryResponse.data);
+        if (addSubjectAndTopicToOrganiserRepositoryResponse.responseCode != 0) {
             serviceResponse.responseCode = -3;
             serviceResponse.data = "Repository is not connected to organiser";
-            console.error("ExamId "+createExamTemplateRepositoryResponse.data+" could not be connected to organiser");
+            console.error("ExamId "+createSubjectAndTopicRepositoryResponse.data+" could not be connected to organiser");
             return serviceResponse;
         }
+        serviceResponse.data = createSubjectAndTopicRepositoryResponse.data;
         serviceResponse.responseCode = 0;
         return serviceResponse;
     },
@@ -236,17 +239,18 @@ export const ExamAdminService = {
             serviceResponse.responseCode = 2;
             return serviceResponse;
         }
-        const createExamTemplateRepositoryResponse : RepositoryResponse<string> = await QuestionRepository.addQuestion(question);
-        if (createExamTemplateRepositoryResponse.responseCode !== 0) {
+        const createQuestionRepositoryResponse : RepositoryResponse<string> = await QuestionRepository.addQuestion(question);
+        if (createQuestionRepositoryResponse.responseCode !== 0) {
             serviceResponse.responseCode = -1;
             serviceResponse.data = "Error creating exam subject and topic";
             return serviceResponse;
         }
-        if (!createExamTemplateRepositoryResponse.data) {
+        if (!createQuestionRepositoryResponse.data) {
             serviceResponse.responseCode = -2;
             serviceResponse.data = "Repository could not create subject and topic";
             return serviceResponse;
         }
+        serviceResponse.data = createQuestionRepositoryResponse.data;
         serviceResponse.responseCode = 0;
         return serviceResponse;
     },
@@ -297,58 +301,58 @@ export const ExamAdminService = {
             return serviceResponse;
         },
     createExamInstance: async (examineeId: string, organiserId: string, examTemplateId: string): Promise<ServiceResponse<string>> => {
-        const createExamInstanceResponse: ServiceResponse<string> = {
+        const createExamInstanceServiceResponse: ServiceResponse<string> = {
             responseCode: -1,
         };
         const examineeCheckResponse: RepositoryResponse<boolean> =
                 await ExamRepository.existsExaminee(examineeId);
         if (examineeCheckResponse.responseCode >0 ) {
-            createExamInstanceResponse.responseCode = 1;
-            createExamInstanceResponse.data = "ExamineeId not found while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = 1;
+            createExamInstanceServiceResponse.data = "ExamineeId not found while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         if (examineeCheckResponse.responseCode <0) {
-            createExamInstanceResponse.responseCode = -1;
-            createExamInstanceResponse.data = "ExamineeId not found while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = -1;
+            createExamInstanceServiceResponse.data = "ExamineeId not found while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         const organiserCheckResponse: RepositoryResponse<boolean> =
                 await ExamRepository.existsOrganiser(organiserId);
         if (organiserCheckResponse.responseCode >0 ) {
-            createExamInstanceResponse.responseCode = 1;
-            createExamInstanceResponse.data = "Organiser not found while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = 1;
+            createExamInstanceServiceResponse.data = "Organiser not found while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         if (organiserCheckResponse.responseCode <0) {
-            createExamInstanceResponse.responseCode = -1;
-            createExamInstanceResponse.data = "Organiser not found while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = -1;
+            createExamInstanceServiceResponse.data = "Organiser not found while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         const examCheckResponse: RepositoryResponse<boolean> =
                 await ExamRepository.existsExamtemplate(examTemplateId);
         if (examCheckResponse.responseCode >0 ) {
-            createExamInstanceResponse.responseCode = 1;
-            createExamInstanceResponse.data = "ExamTemplate not found while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = 1;
+            createExamInstanceServiceResponse.data = "ExamTemplate not found while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         if (examCheckResponse.responseCode <0) {
-            createExamInstanceResponse.responseCode = -1;
-            createExamInstanceResponse.data = "ExamTemplate not found while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = -1;
+            createExamInstanceServiceResponse.data = "ExamTemplate not found while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         const examTemplateResponse: RepositoryResponse<ExamTemplate> =
                 await ExamRepository.getExamTemplate(examTemplateId);
         if (examTemplateResponse.responseCode != 0 || !examTemplateResponse.data) {
-            createExamInstanceResponse.responseCode = -1;
-            createExamInstanceResponse.data = "ExamTemplate data not retrieved while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = -1;
+            createExamInstanceServiceResponse.data = "ExamTemplate data not retrieved while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         const examTemplate: ExamTemplate = examTemplateResponse.data;
         const syllbusResponse: RepositoryResponse<Syllabus> = await ExamRepository.getSyllabus(examTemplate.syllabusId);
         if (syllbusResponse.responseCode != 0 || !syllbusResponse.data) {
-            createExamInstanceResponse.responseCode = -1;
-            createExamInstanceResponse.data = "Syllabus data not retrieved while creating exam instance";
-            return createExamInstanceResponse;
+            createExamInstanceServiceResponse.responseCode = -1;
+            createExamInstanceServiceResponse.data = "Syllabus data not retrieved while creating exam instance";
+            return createExamInstanceServiceResponse;
         }
         const syllabus: Syllabus = syllbusResponse.data;
         const examInstanceBuilder: ExamInstanceDetailBuilder = new ExamInstanceDetailBuilder();
@@ -360,6 +364,7 @@ export const ExamAdminService = {
         examInstanceBuilder.withStatus("Ready");
         examInstanceBuilder.withOrganiser(examTemplate.organiserId);
         examInstanceBuilder.withTemplate(examTemplateId);
+        let questionCount = 0;
         // const includedQuestionIds: Set<string> = new Set();
         const examResultBuilder: ExamResultBuilder =
                 new ExamResultBuilder();
@@ -367,9 +372,9 @@ export const ExamAdminService = {
             const subjectAndTopicResponse: RepositoryResponse<SubjectAndTopic> =
                     await ExamRepository.getSubjectAndTopic(topicAndQuestionCount.subjectAndTopicId);
             if (subjectAndTopicResponse.responseCode != 0 || !subjectAndTopicResponse.data) {
-                createExamInstanceResponse.responseCode=2;
-                createExamInstanceResponse.data = "Service could not find topic with ID "+topicAndQuestionCount.subjectAndTopicId;
-                return createExamInstanceResponse;
+                createExamInstanceServiceResponse.responseCode=2;
+                createExamInstanceServiceResponse.data = "Service could not find topic with ID "+topicAndQuestionCount.subjectAndTopicId;
+                return createExamInstanceServiceResponse;
             }
             const subjectAndTopic: SubjectAndTopic = subjectAndTopicResponse.data;
             const activeQuestionIds: string[] = subjectAndTopic.questionIds.filter((qId)=>{
@@ -377,12 +382,13 @@ export const ExamAdminService = {
             }).map((qId)=>{
                 return qId.id;
             });
+            questionCount += activeQuestionIds.length;
             if (activeQuestionIds.length < topicAndQuestionCount.count) {
-                createExamInstanceResponse.responseCode=3;
-                createExamInstanceResponse.data = "Creating exam instance for exam template:"+
+                createExamInstanceServiceResponse.responseCode=3;
+                createExamInstanceServiceResponse.data = "Creating exam instance for exam template:"+
                         examTemplateId+": could not be completed as not sufficient active question present in subject:"+
                         topicAndQuestionCount.subjectAndTopicId;
-                return createExamInstanceResponse;
+                return createExamInstanceServiceResponse;
             }
             shuffle(activeQuestionIds);
             for (let i=0; i<topicAndQuestionCount.count; i++) {
@@ -390,11 +396,11 @@ export const ExamAdminService = {
                 const questionRepositoryResponse: RepositoryResponse<Question> =
                         await QuestionRepository.getQuestion(activeQuestionIds[i]);
                 if (questionRepositoryResponse.responseCode != 0 || !questionRepositoryResponse.data) {
-                    createExamInstanceResponse.responseCode=4;
-                    createExamInstanceResponse.data = "Creating exam instance for exam template:"+
+                    createExamInstanceServiceResponse.responseCode=4;
+                    createExamInstanceServiceResponse.data = "Creating exam instance for exam template:"+
                             examTemplateId+": could not be completed as Question not found for ID:"+activeQuestionIds[i]+
                             "Referred in Subject:"+topicAndQuestionCount.subjectAndTopicId;
-                    return createExamInstanceResponse;
+                    return createExamInstanceServiceResponse;
                 }
                 examResultBuilder.withQuestionAnswer(new AnswerRecordBuilder()
                     .withQuestionId(activeQuestionIds[i])
@@ -403,32 +409,34 @@ export const ExamAdminService = {
                     .build());
             }
         }
+        examInstanceBuilder.withTotalQuestions(questionCount);
         const examResultCreateResponse: RepositoryResponse<string> =
                 await ExamRepository.createExamResult(examResultBuilder.build());
         if (examResultCreateResponse.responseCode != 0 || !examResultCreateResponse.data) {
-            createExamInstanceResponse.responseCode=-2;
-            createExamInstanceResponse.data = "Creating exam result for exam template:"+
+            createExamInstanceServiceResponse.responseCode=-2;
+            createExamInstanceServiceResponse.data = "Creating exam result for exam template:"+
                             examTemplateId+": could not be completed";
-            return createExamInstanceResponse;
+            return createExamInstanceServiceResponse;
         }
         examInstanceBuilder.withExamResultId(examResultCreateResponse.data);
-        const examInstancResponse: RepositoryResponse<string> =
+        const examInstancRepositoryResponse: RepositoryResponse<string> =
                 await ExamRepository.createNewExamInstance(examInstanceBuilder.build());
-        if (examInstancResponse.responseCode != 0 || !examInstancResponse.data) {
-            createExamInstanceResponse.responseCode=-2;
-            createExamInstanceResponse.data = "Creating exam instance for exam template:"+
+        if (examInstancRepositoryResponse.responseCode != 0 || !examInstancRepositoryResponse.data) {
+            createExamInstanceServiceResponse.responseCode=-2;
+            createExamInstanceServiceResponse.data = "Creating exam instance for exam template:"+
                             examTemplateId+": could not be completed";
-            return createExamInstanceResponse;
+            return createExamInstanceServiceResponse;
         }
         const updateExamineeResponse: RepositoryResponse<string> =
-            await ExamRepository.addExamInstanceToExaminee(examineeId, examInstancResponse.data);
+            await ExamRepository.addExamInstanceToExaminee(examineeId, examInstancRepositoryResponse.data);
         if (updateExamineeResponse.responseCode != 0 ) {
-            console.error("Orphan exam instance:"+examInstancResponse.data+":created for Examinee:"+examineeId);
-            createExamInstanceResponse.responseCode = -3;
-            return createExamInstanceResponse;
+            console.error("Orphan exam instance:"+examInstancRepositoryResponse.data+":created for Examinee:"+examineeId);
+            createExamInstanceServiceResponse.responseCode = -3;
+            return createExamInstanceServiceResponse;
         }
-        createExamInstanceResponse.responseCode = 0;
-        return createExamInstanceResponse;
+        createExamInstanceServiceResponse.data = examInstancRepositoryResponse.data;
+        createExamInstanceServiceResponse.responseCode = 0;
+        return createExamInstanceServiceResponse;
     },
     addExaminee: async (examinee: Examinee) : Promise<ServiceResponse<string>> => {
         const serviceResponse: ServiceResponse<string>= {responseCode: -1};

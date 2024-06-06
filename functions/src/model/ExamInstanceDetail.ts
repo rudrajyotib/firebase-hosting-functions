@@ -91,6 +91,9 @@ export class ExamInstanceDetail {
         if (answerOption < 0 ) {
             return false;
         }
+        if (questionIndex < 0) {
+            return false;
+        }
         if (questionIndex>=this.questions.length) {
             return false;
         }

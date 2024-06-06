@@ -18,7 +18,7 @@ export class ExamInstanceState {
         status: string,
         duration: number,
         totalQuestions: number,
-        currentQuestionIndex?: number,
+        currentQuestionIndex: number,
         nextQuestion?: Question,
         startTime?: Date
     ) {
@@ -50,6 +50,13 @@ export class ExamInstanceState {
     isLastQuestion = () => {
         return this.currentQuestionIndex === (this.totalQuestions - 1);
     };
+
+    getCurrentQuestionIndex = (): number => {
+        if (this.currentQuestionIndex !== undefined) {
+            return this.currentQuestionIndex;
+        }
+        return -1;
+    };
 }
 
 export class ExamInstanceStateBuilder {
@@ -58,7 +65,7 @@ export class ExamInstanceStateBuilder {
     status = "";
     duration = 0;
     totalQuestions = 0;
-    currentQuestionIndex?: number;
+    currentQuestionIndex= -1;
     nextQuestion?: Question;
     startTime?: Date;
 

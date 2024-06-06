@@ -28,7 +28,8 @@ export type StartExamResponse = {
     nextQuestion: ResponseQuestionBody,
     totalQuestions: number,
     secondsRemaining: number,
-    questionId: string
+    questionId: string,
+    questionIndex: number,
 }
 export type ResponseQuestionBody = {
     displayFormat: string,
@@ -55,7 +56,9 @@ export type QuestionWithId = {
 export type ApiSubmitAnswerResponse = {
     allAnswered: boolean,
     nextQuestion?: QuestionWithId,
-    secondsRemaining: number
+    secondsRemaining: number,
+    questionIndex: number,
+    indexAtLastQuestion: boolean,
 }
 export type EvaluateRequest = {
     examineeId: string,

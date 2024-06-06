@@ -45,6 +45,7 @@ export const StartExam =
         };
         if (serviceResponse.responseCode === 0 && serviceResponse.data) {
             if (serviceResponse.data.nextQuestion) {
+                console.log("Receieved service response on start Exam::"+JSON.stringify(serviceResponse.data));
                 apiResponse.responseCode = 0;
                 const nextQuestion: ResponseQuestionBody = {
                     displayFormat: serviceResponse.data.nextQuestion.format,
@@ -57,6 +58,8 @@ export const StartExam =
                     totalQuestions: serviceResponse.data.totalQuestions,
                     secondsRemaining: serviceResponse.data.getRemainingSeconds(),
                     questionId: serviceResponse.data.nextQuestion.id,
+                    // eslint-disable-next-line no-prototype-builtins
+                    questionIndex: serviceResponse.data.getCurrentQuestionIndex(),
                 };
                 apiResponse.data = startExamResponse;
             }
@@ -75,40 +78,36 @@ export const AnswerQuestionAndMoveNext =
         let responseStatus = 200;
         if (serviceResponse.responseCode === 0 ) {
             if (serviceResponse.data) {
+                const answerQuestionResponse: ApiSubmitAnswerResponse = {
+                    allAnswered: serviceResponse.data.isLastQuestion(),
+                    secondsRemaining: serviceResponse.data.getRemainingSeconds(),
+                    questionIndex: serviceResponse.data.currentQuestionIndex ?
+                        serviceResponse.data.currentQuestionIndex : -1,
+                    indexAtLastQuestion: serviceResponse.data.isLastQuestion(),
+                };
                 if (serviceResponse.data.nextQuestion) {
-                    apiResponse.responseCode = 0;
                     const nextQuestion: ResponseQuestionBody = {
                         displayFormat: serviceResponse.data.nextQuestion.format,
                         questionLines: serviceResponse.data.nextQuestion.questionLines,
                         options: serviceResponse.data.nextQuestion.options,
                         questionId: serviceResponse.data.nextQuestion.id,
                     };
-                    const answerQuestionResponse: ApiSubmitAnswerResponse = {
-                        nextQuestion: {
-                            question: nextQuestion,
-                            id: serviceResponse.data.nextQuestion.id,
-                        },
-                        allAnswered: false,
-                        secondsRemaining: serviceResponse.data.getRemainingSeconds(),
+                    answerQuestionResponse.nextQuestion = {
+                        question: nextQuestion,
+                        id: serviceResponse.data.nextQuestion.id,
                     };
-                    apiResponse.data = answerQuestionResponse;
                 }
+                apiResponse.responseCode = 0;
+                apiResponse.data = answerQuestionResponse;
             } else {
                 responseStatus = 500;
             }
-        } else if (serviceResponse.responseCode === 1) {
-            const startExamResponse: ApiSubmitAnswerResponse = {
-                allAnswered: true,
-                secondsRemaining: 0,
-            };
-            apiResponse.responseCode = 0;
-            apiResponse.data = startExamResponse;
-        } else if (serviceResponse.responseCode === 5 || serviceResponse.responseCode === 7 || serviceResponse.responseCode === 9) {
-            responseStatus = 500;
+        } else if (serviceResponse.responseCode > 0) {
             apiResponse.responseCode = serviceResponse.responseCode;
-        } else {
             responseStatus = 400;
+        } else {
             apiResponse.responseCode = serviceResponse.responseCode;
+            responseStatus = 500;
         }
 
         res.status(responseStatus).json(apiResponse);
