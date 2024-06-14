@@ -30,6 +30,7 @@ import {Request, Response} from "express";
 import {examRouter} from "./api/router/ExamRouter";
 import {AddExamConverter as addExamConverter, AddExamAndExaminee as addExamAndExaminee} from "./api/TestOnly";
 import {organiserAdminRouter} from "./api/router/OrganiserAdminRouter";
+import {userRouter} from "./api/router/UserRouter";
 const app = express();
 
 const db = getFirestore();
@@ -70,6 +71,7 @@ app.get("/apn", (_req: any, _res: any) => {
 
 app.use("/exams", examRouter);
 app.use("/org", organiserAdminRouter);
+app.use("/user", userRouter);
 app.get("/loadtestdata", (_req: Request, _res: Response) => {
     addExamAndExaminee(_req, _res);
 });
