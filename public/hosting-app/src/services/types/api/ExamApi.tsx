@@ -1,6 +1,7 @@
 export type StartExamRequest = {"examId": string, "studentId": string}
-export type StartExamResponse = {"responseCode":number,"nextQuestion":ResponseQuestionBody, "totalQuestions":number, "secondsRemaining": number, "questionId": string}
-export type ResponseQuestionBody = {"displayFormat": "textonly" | "textAndImage" | "image", "questionLines": string[], "options": string[]}
+export type StartExamResponse = {"responseCode":number, "data": StartResponseBody}
+export type StartResponseBody = {"nextQuestion":ResponseQuestionBody, "totalQuestions":number, "secondsRemaining": number, "questionId": string, questionIndex: number}
+export type ResponseQuestionBody = {"displayFormat": "Text" | "textAndImage" | "image", "questionLines": string[], "options": string[],questionId:string}
 export type ActiveExamQueryResponseList = ActiveExamQueryResponseDefinition[]
 export type ActiveExamQueryResponseDefinition = {id: string
     examineeId: string

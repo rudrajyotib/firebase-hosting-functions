@@ -24,14 +24,14 @@ interface QuestionDisplay {
 
 const ActiveExam = () => {
 
-    let examId = useRef(useParams()['examId'])
+    let examId = useRef(useParams()['examId']).current;
 
     const [examState, setExamState] = useState<ExamState>({
         totalQuestions: 0,
         questionIndex: 0,
         state: 'initialising',
         secondsRemaining: 20,
-        examId: ''
+        examId: examId ? examId : '',
     }
     )
 

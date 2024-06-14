@@ -1,2 +1,9 @@
-[{ "id":"ABC", "label":"Title of ABC"},
-{ "id":"DEF", "label":"Title of DEF"}]
+[
+    {
+        "id": "examInstance1",
+        "label": "Grade 3 Maths Easy  by Harvest International School",
+        "examineeId": "examinee1",
+        "organiser": "organiser 1",
+        "status": "Ready"
+    }
+]

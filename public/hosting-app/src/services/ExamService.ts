@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios"
 import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } from "./types/domain/ExamData"
-import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithId, StartExamResponse } from "./types/api/ExamApi"
+import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithId, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 
 const ExamService = {
 
@@ -40,23 +40,25 @@ const ExamService = {
             .then((res: AxiosResponse)=>{
                 if (res.status === 200){
                     const data: StartExamResponse = res.data
+                    console.log("Start exam service received response::"+JSON.stringify(data));
                     const examStartResponse: ExamResponse = {responseStatus:'initialised'}
                     if (data.responseCode !== 0){
                         examStartResponse.responseStatus = 'failed'
                     }else{
-                        if (data.nextQuestion){
+                        const startResponseBody: StartResponseBody = data.data;
+                        if (startResponseBody.nextQuestion){
                             const activeQuestion: Question = {
-                                displayFormat: data.nextQuestion.displayFormat,
-                                questionId: data.questionId,
-                                questionLines: data.nextQuestion.questionLines,
-                                options: data.nextQuestion.options
+                                displayFormat: startResponseBody.nextQuestion.displayFormat,
+                                questionId: startResponseBody.questionId,
+                                questionLines: startResponseBody.nextQuestion.questionLines,
+                                options: startResponseBody.nextQuestion.options
                             }
                             examStartResponse.activeQuestion = activeQuestion
                         }
                         const examDetails: ActiveExamDetails = {
-                            totalQuestions: data.totalQuestions,
-                            secondsRemaining: data.secondsRemaining,
-                            currentQuestionIndex: 1
+                            totalQuestions: startResponseBody.totalQuestions,
+                            secondsRemaining: startResponseBody.secondsRemaining,
+                            currentQuestionIndex: startResponseBody.questionIndex
                         }
                         examStartResponse.activeExamDetails = examDetails
                     }
@@ -80,7 +82,7 @@ const ExamService = {
             questionIndex: 2,
             secondsRemaining: 150,
             questionData: {
-                displayFormat:'textonly',
+                displayFormat:'Text',
                 options: ['OPT A Q2','OPT B Q2', 'OPT C Q2'],
                 questionId:'q2',
                 questionLines: ['Line 1 Next Question', 'Line 2 Next Question', 'Line 3 Next Question']

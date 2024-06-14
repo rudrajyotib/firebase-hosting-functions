@@ -110,6 +110,11 @@ NameFromBody:
   from: body
   element: ".questionId"
 
+QuestionIndexFromBody:
+  is: parameter
+  from: body
+  element: ".questionIndex"
+
 VerificationScript:
   is: script
   executor: javascriptExecutor

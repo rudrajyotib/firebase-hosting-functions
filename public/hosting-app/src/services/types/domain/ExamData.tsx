@@ -1,6 +1,6 @@
 export type Question = {
     questionLines : string[],
-    displayFormat : 'textonly' | 'textAndImage' | 'image',
+    displayFormat : 'Text' | 'textAndImage' | 'image',
     options : string[],
     questionId: string
 }

@@ -3,6 +3,7 @@ export type Question = {
     displayFormat: string,
     questionLines: string[],
     options: string[],
+    questionId: string,
 }
 
 export type SubmitAnswerRequest = {
@@ -19,7 +20,8 @@ export type StartExamResponse = {
     nextQuestion: ResponseQuestionBody,
     totalQuestions: number,
     secondsRemaining: number,
-    questionId: string
+    questionId: string,
+    questionIndex: number,
 }
 export type ResponseQuestionBody = {
     displayFormat: string,
