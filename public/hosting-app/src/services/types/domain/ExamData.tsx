@@ -32,7 +32,7 @@ export type SubmitAnswerRequest = {
     questionIndex: number
 }
 
-export type SubmitAnswerResponse = {
+export type SubmitAnswerAndMoveNextResponse = {
     staus: 'Success' | 'Timedout' | 'Failed' | 'AllAnswered',
     allAnswered: boolean,
     nextQuestion?: Question,

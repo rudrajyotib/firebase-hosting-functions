@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } from "./types/domain/ExamData"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 
 const ExamService = {
@@ -92,7 +92,7 @@ const ExamService = {
         })
     },
 
-    submitAnswer: (answer: SubmitAnswerRequest,  successCallback: (response: SubmitAnswerResponse) => void) => {
+    submitAnswerAndMoveNext: (answer: SubmitAnswerRequest,  successCallback: (response: SubmitAnswerAndMoveNextResponse) => void) => {
         console.log('submitting answer')
         axios.post('/api/exams/answer', {
              examineeId: answer.studentId,
@@ -113,7 +113,7 @@ const ExamService = {
             console.log('answer received', res.data)
             if (res.status === 200){
                 const responseData: ApiSubmitAnswerResponse = res.data.data
-                const submitAnswerResponse: SubmitAnswerResponse = {
+                const submitAnswerResponse: SubmitAnswerAndMoveNextResponse = {
                     staus: responseData.allAnswered===true ? 'AllAnswered' : 'Success',
                     allAnswered: responseData.allAnswered,
                     secondsRemaining: responseData.allAnswered ? 0 : responseData.secondsRemaining

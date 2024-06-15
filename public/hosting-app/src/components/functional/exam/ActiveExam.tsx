@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ExamService from "../../../services/ExamService";
-import { ExamResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } from "../../../services/types/domain/ExamData";
+import { ExamResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse } from "../../../services/types/domain/ExamData";
 import TimedQuestionAnswerInteraction from "./console/TimedQuestionAnswerInteraction";
 import { useParams } from "react-router-dom";
 import AllQuestionsAnswered from "./AllQuestionsAnswered";
@@ -117,8 +117,8 @@ const ActiveExam = () => {
             selectedOption: option,
             questionIndex: examState.questionIndex
         }
-        ExamService.submitAnswer(submitAnswerRequest,
-            (response: SubmitAnswerResponse) => {
+        ExamService.submitAnswerAndMoveNext(submitAnswerRequest,
+            (response: SubmitAnswerAndMoveNextResponse) => {
                 if (response.staus === 'Success' && response.nextQuestion){
                     const nextQuestion: Question = response.nextQuestion
                     setQuestionDisplay({

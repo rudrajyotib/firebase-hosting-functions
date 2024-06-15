@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import QuestionBody from "../../ui/composite/QuestionBody";
 import { Button, CountdownTimer } from "rb-base-element";
 import ExamService from "../../../services/ExamService";
-import { ExamResponse, NextQuestionResponse, SubmitAnswerResponse } from "../../../services/types/domain/ExamData";
+import { ExamResponse, NextQuestionResponse, SubmitAnswerAndMoveNextResponse } from "../../../services/types/domain/ExamData";
 import QuestionIndex from "../../ui/composite/QuestionIndex";
 
 interface ExamState {
