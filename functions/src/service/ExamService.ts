@@ -101,7 +101,6 @@ export const ExamService = {
             examInstanceStateBuilder.withStartTime(examInstanceDetail.startTime);
         }
         serviceResponse.data = examInstanceStateBuilder.build();
-        serviceResponse.responseCode = 0;
         return serviceResponse;
     },
 };
