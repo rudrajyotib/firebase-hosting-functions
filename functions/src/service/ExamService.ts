@@ -3,6 +3,7 @@
 import {EvaluateRequest, SubmitAnswerRequest} from "../api/interfaces/ExamInteractionDto";
 import {ExamInstanceDetail} from "../model/ExamInstanceDetail";
 import {ExamInstanceState, ExamInstanceStateBuilder} from "../model/ExamInstanceState";
+import {ExamResult} from "../model/ExamResult";
 import {Question} from "../model/Question";
 import {ExamRepository} from "../repository/ExamRepository";
 import {QuestionRepository} from "../repository/QuestionRepository";
@@ -11,17 +12,20 @@ import {ServiceResponse} from "./data/ServiceResponse";
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 export const ExamService = {
-    evaluate: async (evaluationRequest: EvaluateRequest) => {
-        ExamRepository
+    evaluate: async (evaluationRequest: EvaluateRequest): Promise<ServiceResponse<ExamResult>> => {
+        const serviceResponse: ServiceResponse<ExamResult> = {
+            responseCode: -1,
+        };
+        await ExamRepository
             .evaluate(evaluationRequest)
-            .then((result)=>{
-                console.log("Service has a result for evaluation", result);
-                return 0;
+            .then((result: RepositoryResponse<ExamResult>)=>{
+                serviceResponse.responseCode = result.responseCode;
+                serviceResponse.data = result.data;
             })
             .catch((err)=>{
                 console.error("Service received an error on evaluation", err);
-                return -1;
             });
+        return serviceResponse;
     },
     startExam: async (examineeId: string, examInstanceId: string): Promise<ServiceResponse<ExamInstanceState>> => {
         const serviceResponse: ServiceResponse<ExamInstanceState> = {responseCode: -1};

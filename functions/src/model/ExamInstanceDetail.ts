@@ -69,6 +69,10 @@ export class ExamInstanceDetail {
         this.status = "AllAnswered";
     };
 
+    markEvaluated = () => {
+        this.status = "Evaluated";
+    };
+
     isInProgress = () => {
         return (this.status === "InProgress" && this.getSecondsRemaining() > 0);
     };

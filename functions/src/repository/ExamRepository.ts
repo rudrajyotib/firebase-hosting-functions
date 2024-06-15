@@ -13,7 +13,7 @@ import {ExamineeConverter} from "./converters/ExamineeConverter";
 import {EvaluateRequest, SubmitAnswerRequest} from "../api/interfaces/ExamInteractionDto";
 import {DocumentSnapshot} from "firebase-admin/firestore";
 import {ExamResultConverter} from "./converters/ExamResultConverter";
-import {AnswerRecordBuilder, ExamResult, ExamResultBuilder} from "../model/ExamResult";
+import {ExamResult} from "../model/ExamResult";
 import {SubjectAndTopic} from "../model/SubjectAndTopic";
 import {SubjectAndTopicConverter} from "./converters/SubjectAndTopicsConverter";
 import {Syllabus, TopicAndQuestionCount} from "../model/Syllabus";
@@ -307,8 +307,8 @@ export const ExamRepository = {
         return repositoryResponse;
     },
 
-    evaluate: async (evaluationRequest: EvaluateRequest) : Promise<RepositoryResponse<boolean>> => {
-        const repositoryResponse: RepositoryResponse<boolean> = {
+    evaluate: async (evaluationRequest: EvaluateRequest) : Promise<RepositoryResponse<ExamResult>> => {
+        const repositoryResponse: RepositoryResponse<ExamResult> = {
             responseCode: -1,
         };
         const examInstanceRef: FirebaseFirestore.DocumentReference<ExamInstanceDetail> =
@@ -319,39 +319,54 @@ export const ExamRepository = {
         console.log("Repository:Evaluate received exam instance doc");
         if (!examInstanceDoc.exists) {
             console.log("Repository:Evaluate Doc not found");
+            repositoryResponse.responseCode = 1;
+            return repositoryResponse;
         }
         const examInstanceDetail = examInstanceDoc.data();
         if ( (examInstanceDetail?.examineeId !== evaluationRequest.examineeId) ) {
             console.log("ExamineeId does not match");
+            repositoryResponse.responseCode = 2;
+            return repositoryResponse;
         }
-        await repository.collection("ExamResult")
-            .withConverter(ExamResultConverter)
-            .add(new ExamResultBuilder()
-                .withStatus("NotEvaluated")
-                .withScore(30)
-                .withTotalMarks(40)
-                .withQuestionAnswer(new AnswerRecordBuilder()
-                    .withCorrectAnswerIndex(0)
-                    .withGivenAnswerIndex(1)
-                    .withQuestionId("Q1")
-                    .withWeightage(1)
-                    .withStatus("Answered")
-                    .build())
-                .withQuestionAnswer(new AnswerRecordBuilder()
-                    .withCorrectAnswerIndex(0)
-                    .withGivenAnswerIndex(1)
-                    .withQuestionId("Q2")
-                    .withWeightage(1)
-                    .withStatus("Answered")
-                    .build())
-                .build()
-            )
-            .then((data: FirebaseFirestore.DocumentReference<ExamResult>) => {
-                console.log("Evaluation created", data.id);
+        if (!examInstanceDetail) {
+            repositoryResponse.responseCode = -1;
+            return repositoryResponse;
+        }
+        const examResultId = examInstanceDetail.examResultId;
+        const examResultRef: FirebaseFirestore.DocumentReference<ExamResult> =
+            repository.collection("ExamResult")
+                .withConverter(ExamResultConverter)
+                .doc(examResultId);
+        const examResultDoc: FirebaseFirestore.DocumentSnapshot<ExamResult> =
+            await examResultRef.get();
+        if (!examResultDoc.exists) {
+            repositoryResponse.responseCode = -2;
+            return repositoryResponse;
+        }
+        const examResult = examResultDoc.data();
+        if (!examResult) {
+            repositoryResponse.responseCode = -3;
+            return repositoryResponse;
+        }
+        examResult.evaluate();
+        await examResultRef
+            .set(examResult, {mergeFields: ["score", "status"]})
+            .then(() => {
+                repositoryResponse.responseCode = 0;
+                repositoryResponse.data = examResult;
             })
-            .catch((e) => {
-                console.error("Evaluation repo error", e);
+            .catch((e)=>{
+                console.error("Error saving exam result:", e);
+                repositoryResponse.responseCode = -4;
             });
+        if (repositoryResponse.responseCode === 0 ) {
+            examInstanceDetail.markEvaluated();
+            examInstanceRef
+                .set(examInstanceDetail, {mergeFields: ["status"]})
+                .catch((e)=>{
+                    console.error("After evaluation, exam status marking failed for examInstanceId::"+evaluationRequest.examInstanceId, e);
+                });
+        }
         return repositoryResponse;
     },
     addSubjectAndTopic: async (subjectAndTopic: SubjectAndTopic) : Promise<RepositoryResponse<string>> => {

@@ -4,11 +4,12 @@ import {Request, Response} from "express";
 import functions = require("firebase-functions")
 import {ExamRepository} from "../../repository/ExamRepository";
 import {ExamInstanceSummary} from "../../model/ExamInstanceSummary";
-import {ActiveExamQueryResponseDefinition, ApiSubmitAnswerResponse, EvaluateRequest, ResponseQuestionBody, StartExamResponse, SubmitAnswerRequest} from "../interfaces/ExamInteractionDto";
+import {ActiveExamQueryResponseDefinition, ApiSubmitAnswerResponse, EvaluateRequest, ExamResultResponse, ResponseQuestionBody, StartExamResponse, SubmitAnswerRequest} from "../interfaces/ExamInteractionDto";
 import {ExamInstanceState} from "../../model/ExamInstanceState";
 import {ApiResponse} from "../interfaces/ApiResponse";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
 import {ExamService} from "../../service/ExamService";
+import {ExamResult} from "../../model/ExamResult";
 
 
 export const ListActiveExam =
@@ -117,15 +118,28 @@ export const Evaluate = async (req: Request, res: Response) => {
     const evaluateRequest : EvaluateRequest = req.body;
     ExamService
         .evaluate(evaluateRequest)
-        .then((success)=>{
-            console.log("Exam controller on evaluate success from service", success);
-            res.status(200).json({
-                accepted: true,
-            });
+        .then((success: ServiceResponse<ExamResult>)=>{
+            if (success.responseCode === 0 ) {
+                const examResult: ExamResultResponse = {
+                    examineeId: evaluateRequest.examineeId,
+                    examInstanceId: evaluateRequest.examInstanceId,
+                    totalMarks: 0,
+                    totalScore: 0,
+                };
+                if (success.data) {
+                    examResult.totalMarks = success.data.totalMarks;
+                    examResult.totalScore = success.data.score;
+                }
+                res.status(200).send(examResult);
+            } else if (success.responseCode > 0) {
+                res.status(400).send();
+            } else {
+                res.status(500).send();
+            }
         })
         .catch((err) => {
             console.error("Exam controller received error response on evaluation", err);
-            res.status(400).json({
+            res.status(500).json({
                 accepted: false,
             });
         });

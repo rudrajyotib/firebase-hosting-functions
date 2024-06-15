@@ -77,8 +77,7 @@ export type ExamResultResponse = {
     examineeId: string,
     examInstanceId: string,
     totalMarks: number,
-    marksScrore: number,
-    answers: AnswerAttempt[]
+    totalScore: number,
 }
 export type CorrelateQuestionAndTopicRequest = {
     questionId: string,

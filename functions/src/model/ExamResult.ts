@@ -156,6 +156,14 @@ export class ExamResultBuilder {
     };
 
     build = () =>{
+        const addAllWeightage = this.questionsAndAnswers.map((qna)=>{
+            return qna.weightage;
+        }).reduce((prev, current)=>{
+            return prev + current;
+        });
+        if (this.totalMarks === -1) {
+            this.totalMarks = addAllWeightage;
+        }
         return new ExamResult(
             this.id,
             this.score,
