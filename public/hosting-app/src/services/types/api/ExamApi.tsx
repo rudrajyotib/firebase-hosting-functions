@@ -9,5 +9,5 @@ export type ActiveExamQueryResponseDefinition = {id: string
     status : "attempted" | "ready" | "complete"
     organiser: string}
 export type ApiSubmitAnswerRequest = {"questionId": string, "option": number}
-export type ApiSubmitAnswerResponse = {responseCode: number, allAnswered: boolean, nextQuestion?: QuestionWithId, secondsRemaining: number}
-export type QuestionWithId = {question: ResponseQuestionBody, id: string}
+export type ApiSubmitAnswerResponse = {responseCode: number, allAnswered: boolean, nextQuestion?: QuestionWithIdAndIndex, secondsRemaining: number, questionIndex: number}
+export type QuestionWithIdAndIndex = {question: ResponseQuestionBody, id: string}

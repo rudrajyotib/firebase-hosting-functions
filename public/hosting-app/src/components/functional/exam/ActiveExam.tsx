@@ -25,6 +25,8 @@ interface QuestionDisplay {
 const ActiveExam = () => {
 
     let examId = useRef(useParams()['examId']).current;
+    const examineeId = localStorage.getItem('examineeId')
+    const examStarted = useRef(false);
 
     const [examState, setExamState] = useState<ExamState>({
         totalQuestions: 0,
@@ -44,10 +46,14 @@ const ActiveExam = () => {
 
     useEffect(() => {
         console.log('useEffect in action:', examState.state)
-        if (examState.state === 'initialising') {
+        if (examStarted.current === true) {
+            return;
+        }
+        examStarted.current = true;
+        if (examState.state === 'initialising' && examineeId && examineeId !== "" ) {
             console.log('question state is initialising')
 
-            ExamService.initialiseExam(examState.examId, '112', (response: ExamResponse) => {
+            ExamService.initialiseExam(examState.examId, examineeId, (response: ExamResponse) => {
                 console.log('Exam component on start::', JSON.stringify(response))
                 if (response.responseStatus !== 'initialised') {
                     setExamState((presentState: ExamState) => {
@@ -107,8 +113,9 @@ const ActiveExam = () => {
         const submitAnswerRequest: SubmitAnswerRequest = {
             examInstanceId: examState.examId,
             questionId: questionDisplay.questionId,
-            studentId: '112',
-            selectedOption: option
+            studentId: examineeId ? examineeId : '',
+            selectedOption: option,
+            questionIndex: examState.questionIndex
         }
         ExamService.submitAnswer(submitAnswerRequest,
             (response: SubmitAnswerResponse) => {
@@ -126,7 +133,7 @@ const ActiveExam = () => {
                         const newState: ExamState = { ...currentState }
                         newState.state = 'active'
                         newState.secondsRemaining = response.secondsRemaining
-                        newState.questionIndex += 1
+                        newState.questionIndex = response.nextQuestion? response.nextQuestion.questionIndex: -1
                         return newState
                     })
                 }else if (response.staus === 'AllAnswered'){

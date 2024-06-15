@@ -2,7 +2,8 @@ export type Question = {
     questionLines : string[],
     displayFormat : 'Text' | 'textAndImage' | 'image',
     options : string[],
-    questionId: string
+    questionId: string,
+    questionIndex: number
 }
 
 export type ActiveExamDetails = {
@@ -27,7 +28,8 @@ export type SubmitAnswerRequest = {
     examInstanceId: string,
     questionId : string,
     selectedOption: number,
-    studentId: string
+    studentId: string,
+    questionIndex: number
 }
 
 export type SubmitAnswerResponse = {

@@ -1,12 +1,12 @@
 import axios, { AxiosResponse } from "axios"
 import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerResponse } from "./types/domain/ExamData"
-import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithId, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
+import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 
 const ExamService = {
 
     queryActiveExams: (examineeId: string, successCallback : (response: ActiveExams)=> void) => {
         console.log('querying active exam for student', examineeId)
-        axios.get('/api/exams/active?examineeId=student1')
+        axios.get('/api/exams/active?examineeId='+examineeId)
             .then((res:AxiosResponse)=>{
                 const activeExams : ActiveExams = {exams:[]}
                 if (res.status === 200){
@@ -32,7 +32,7 @@ const ExamService = {
     initialiseExam: (examId: string, studentId: string, successCallback: (response: ExamResponse) => void) => {
         console.log('initialising exam', examId)
         console.log('assuming exam id' + examId + ' initialised')
-        axios.post('/api/exams/start', {examId: examId, studentId: studentId}, {
+        axios.post('/api/exams/start', {examInstanceId: examId, examineeId: studentId}, {
             'headers' : {
                 'Accept' : 'application/JSON'
             }
@@ -51,7 +51,8 @@ const ExamService = {
                                 displayFormat: startResponseBody.nextQuestion.displayFormat,
                                 questionId: startResponseBody.questionId,
                                 questionLines: startResponseBody.nextQuestion.questionLines,
-                                options: startResponseBody.nextQuestion.options
+                                options: startResponseBody.nextQuestion.options,
+                                questionIndex: startResponseBody.questionIndex
                             }
                             examStartResponse.activeQuestion = activeQuestion
                         }
@@ -85,7 +86,8 @@ const ExamService = {
                 displayFormat:'Text',
                 options: ['OPT A Q2','OPT B Q2', 'OPT C Q2'],
                 questionId:'q2',
-                questionLines: ['Line 1 Next Question', 'Line 2 Next Question', 'Line 3 Next Question']
+                questionLines: ['Line 1 Next Question', 'Line 2 Next Question', 'Line 3 Next Question'],
+                questionIndex: 0
             }
         })
     },
@@ -93,10 +95,11 @@ const ExamService = {
     submitAnswer: (answer: SubmitAnswerRequest,  successCallback: (response: SubmitAnswerResponse) => void) => {
         console.log('submitting answer')
         axios.post('/api/exams/answer', {
-             studentId: answer.studentId,
+             examineeId: answer.studentId,
              questionId: answer.questionId, 
-             examId: answer.examInstanceId,
-             answer: answer.selectedOption},{
+             examInstanceId: answer.examInstanceId,
+             answer: answer.selectedOption,
+             questionIndex: answer.questionIndex},{
             'headers' : {
                 'Accept' : 'application/JSON'
             },
@@ -109,19 +112,20 @@ const ExamService = {
         } ).then((res:AxiosResponse)=>{
             console.log('answer received', res.data)
             if (res.status === 200){
-                const responseData: ApiSubmitAnswerResponse = res.data
+                const responseData: ApiSubmitAnswerResponse = res.data.data
                 const submitAnswerResponse: SubmitAnswerResponse = {
                     staus: responseData.allAnswered===true ? 'AllAnswered' : 'Success',
                     allAnswered: responseData.allAnswered,
                     secondsRemaining: responseData.allAnswered ? 0 : responseData.secondsRemaining
                 }
                 if (responseData.nextQuestion){
-                    const nextQuestionResponse: QuestionWithId = responseData.nextQuestion
+                    const nextQuestionResponse: QuestionWithIdAndIndex = responseData.nextQuestion
                     const nextQuestion: Question = {
                         questionLines: nextQuestionResponse.question.questionLines,
                         displayFormat: nextQuestionResponse.question.displayFormat,
                         options: nextQuestionResponse.question.options,
-                        questionId: nextQuestionResponse.id
+                        questionId: nextQuestionResponse.id,
+                        questionIndex: responseData.questionIndex
                     }
                     submitAnswerResponse.nextQuestion = nextQuestion
                 }    
