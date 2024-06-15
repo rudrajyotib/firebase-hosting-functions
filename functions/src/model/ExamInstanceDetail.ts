@@ -65,6 +65,10 @@ export class ExamInstanceDetail {
         }
     };
 
+    markAllAnswered = () => {
+        this.status = "AllAnswered";
+    };
+
     isInProgress = () => {
         return (this.status === "InProgress" && this.getSecondsRemaining() > 0);
     };
@@ -107,6 +111,8 @@ export class ExamInstanceDetail {
             this.answers[this.currentQuestionIndex] = answerOption;
             if (this.currentQuestionIndex < (this.questions.length - 1)) {
                 ++this.currentQuestionIndex;
+            } else {
+                this.markAllAnswered();
             }
             return true;
         }

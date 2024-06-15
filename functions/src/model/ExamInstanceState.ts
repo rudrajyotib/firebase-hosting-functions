@@ -51,6 +51,10 @@ export class ExamInstanceState {
         return this.currentQuestionIndex === (this.totalQuestions - 1);
     };
 
+    isAllAnswered = () => {
+        return this.status === "AllAnswered";
+    };
+
     getCurrentQuestionIndex = (): number => {
         if (this.currentQuestionIndex !== undefined) {
             return this.currentQuestionIndex;

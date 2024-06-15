@@ -79,7 +79,7 @@ export const AnswerQuestionAndMoveNext =
         if (serviceResponse.responseCode === 0 ) {
             if (serviceResponse.data) {
                 const answerQuestionResponse: ApiSubmitAnswerResponse = {
-                    allAnswered: serviceResponse.data.isLastQuestion(),
+                    allAnswered: serviceResponse.data.isAllAnswered(),
                     secondsRemaining: serviceResponse.data.getRemainingSeconds(),
                     questionIndex: serviceResponse.data.currentQuestionIndex ?
                         serviceResponse.data.currentQuestionIndex : -1,
