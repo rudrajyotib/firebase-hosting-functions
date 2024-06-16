@@ -15,13 +15,14 @@ import {DocumentSnapshot} from "firebase-admin/firestore";
 import {ExamResultConverter} from "./converters/ExamResultConverter";
 import {ExamResult} from "../model/ExamResult";
 import {SubjectAndTopic} from "../model/SubjectAndTopic";
-import {SubjectAndTopicConverter} from "./converters/SubjectAndTopicsConverter";
+import {SubjectAndTopicConverter, SubjectAndTopicSummaryConverter} from "./converters/SubjectAndTopicsConverter";
 import {Syllabus, TopicAndQuestionCount} from "../model/Syllabus";
 import {SyllabusConverter} from "./converters/SyllabusConverter";
 import {Organiser} from "../model/Organiser";
 import {OrganiserConverter} from "./converters/OrganiserConverter";
 import {ExamTemplate} from "../model/ExamTemplate";
 import {ExamTemplateConverter} from "./converters/ExamTemplateConverter";
+import { SubjectAndTopicSummary } from "../model/SubjectAndTopicSummary";
 // import {collection, query, where} from "firebase/firestore";
 
 const repository = source.repository;
@@ -401,6 +402,27 @@ export const ExamRepository = {
                 functions.logger.error("Error getting SubjectAndTopic for ID::", subjectAndTopicId, e);
             });
         return response;
+    },
+    listSubjectAndTopics: async (organiserId: string) : Promise<RepositoryResponse<SubjectAndTopicSummary[]>> => {
+        const repositoryResponse: RepositoryResponse<SubjectAndTopicSummary[]> = {
+            responseCode: -1,
+        };
+        const subjectAndTopicSummaries: SubjectAndTopicSummary[] = [];
+        await repository.collection("SubjectAndTopic")
+            .withConverter(SubjectAndTopicSummaryConverter)
+            .where("organiserId", "==", organiserId)
+            .get()
+            .then((snapshot: FirebaseFirestore.QuerySnapshot<SubjectAndTopicSummary>)=>{
+                snapshot.forEach((snap)=>{
+                    subjectAndTopicSummaries.push(snap.data());
+                });
+                repositoryResponse.responseCode = 0;
+                repositoryResponse.data = subjectAndTopicSummaries;
+            })
+            .catch((e)=>{
+                console.error("Error querying subjects and topics by organiserId", e);
+            });
+        return repositoryResponse;
     },
     addSyllabus: async (subjectAndTopic: Syllabus) : Promise<RepositoryResponse<string>> => {
         const response: RepositoryResponse<string> = {responseCode: 0, data: ""};

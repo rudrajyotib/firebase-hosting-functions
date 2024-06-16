@@ -48,3 +48,11 @@ export type SubjectAndTopicRequest = {
     organiserId: string,
     title: string
 }
+
+export type SubjectsAndTopicsSummaryResponse = {
+    grade: number,
+    topic: string,
+    subject: string,
+    id: string,
+    title: string
+}

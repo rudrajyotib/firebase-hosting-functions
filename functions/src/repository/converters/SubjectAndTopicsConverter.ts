@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import {FirestoreDataConverter} from "firebase-admin/firestore";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
+import {SubjectAndTopicSummary, SubjectAndTopicSummaryBuilder} from "../../model/SubjectAndTopicSummary";
 
 export const SubjectAndTopicConverter : FirestoreDataConverter<SubjectAndTopic> = {
     toFirestore: function(modelObject: SubjectAndTopic): FirebaseFirestore.DocumentData {
@@ -27,5 +28,20 @@ export const SubjectAndTopicConverter : FirestoreDataConverter<SubjectAndTopic> 
             subjectAndTopicBuilder.withQuestionId( q["id"], q["active"]);
         });
         return subjectAndTopicBuilder.build();
+    },
+};
+
+export const SubjectAndTopicSummaryConverter : FirestoreDataConverter<SubjectAndTopicSummary> = {
+    toFirestore: function(modelObject: SubjectAndTopic): FirebaseFirestore.DocumentData {
+        throw new Error("There should not be any attempt to save summary");
+    },
+    fromFirestore: function(snapshot: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) {
+        const subjectAndTopicSummaryBuilder: SubjectAndTopicSummaryBuilder = new SubjectAndTopicSummaryBuilder();
+        subjectAndTopicSummaryBuilder.withSubject(snapshot.get("subject"));
+        subjectAndTopicSummaryBuilder.withId(snapshot.id);
+        subjectAndTopicSummaryBuilder.withTopic(snapshot.get("topic"));
+        subjectAndTopicSummaryBuilder.withGrade(snapshot.get("grade"));
+        subjectAndTopicSummaryBuilder.withTitle(snapshot.get("title"));
+        return subjectAndTopicSummaryBuilder.build();
     },
 };

@@ -4,13 +4,15 @@ import {Request, Response} from "express";
 import {ExamAdminService} from "../../service/ExamAdminService";
 import {OrganiserBuilder} from "../../model/Organiser";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
-import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, SubjectAndTopicRequest} from "../interfaces/OrganiserInteractionDto";
+import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse} from "../interfaces/OrganiserInteractionDto";
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
 import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
 import {Question, QuestionBuilder} from "../../model/Question";
 import {ExamineeBuilder} from "../../model/Examinee";
+import {ExamService} from "../../service/ExamService";
+import {SubjectAndTopicSummary} from "../../model/SubjectAndTopicSummary";
 
 
 export const AddOrganiser =
@@ -324,6 +326,39 @@ export const AddExaminee =
             })
             .catch((e)=>{
                 console.error("Controller got error creating new examinee", e);
+                res.status(500).send();
+            });
+    };
+
+export const ListOfSubjectAndTopicsByOrg =
+    async (req: Request, res: Response) => {
+        const organisationId = req.query.orgId;
+        if (!organisationId || organisationId === "") {
+            res.status(400).send();
+            return;
+        }
+        ExamAdminService.retrieveSubjectAndTopicForOrganisation(""+organisationId)
+            .then((response: ServiceResponse<SubjectAndTopicSummary[]>) =>{
+                if (response.responseCode === 0 ) {
+                    const responses: SubjectsAndTopicsSummaryResponse[] = [];
+                    if (response.data && response.data != undefined) {
+                        response.data.forEach((summary)=>{
+                            responses.push({
+                                grade: summary.grade,
+                                subject: summary.subject,
+                                title: summary.title,
+                                id: summary.id,
+                                topic: summary.topic,
+                            });
+                        });
+                        res.status(200).send(responses);
+                    }
+                } else {
+                    res.status(400).send();
+                }
+            })
+            .catch((e)=> {
+                console.error("Error getting list of subjects and topics from service in controller", e);
                 res.status(500).send();
             });
     };

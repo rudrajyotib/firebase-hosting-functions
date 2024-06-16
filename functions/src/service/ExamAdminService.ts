@@ -7,6 +7,7 @@ import {Examinee} from "../model/Examinee";
 import {Organiser} from "../model/Organiser";
 import {Question} from "../model/Question";
 import {SubjectAndTopic} from "../model/SubjectAndTopic";
+import {SubjectAndTopicSummary} from "../model/SubjectAndTopicSummary";
 import {Syllabus, TopicAndQuestionCount} from "../model/Syllabus";
 import {ExamRepository} from "../repository/ExamRepository";
 import {QuestionRepository} from "../repository/QuestionRepository";
@@ -221,6 +222,24 @@ export const ExamAdminService = {
         }
         serviceResponse.data = createSubjectAndTopicRepositoryResponse.data;
         serviceResponse.responseCode = 0;
+        return serviceResponse;
+    },
+    retrieveSubjectAndTopicForOrganisation: async (organisationId: string):
+        Promise<ServiceResponse<SubjectAndTopicSummary[]>> => {
+        // eslint-disable-next-line max-len
+        const serviceResponse: ServiceResponse<SubjectAndTopicSummary[]> = {
+            responseCode: -1,
+        };
+        await ExamRepository.listSubjectAndTopics(organisationId)
+            .then((repositoryResponse: RepositoryResponse<SubjectAndTopicSummary[]>)=>{
+                if (repositoryResponse.responseCode === 0) {
+                    serviceResponse.responseCode = 0;
+                    serviceResponse.data = repositoryResponse.data;
+                }
+            })
+            .catch((e)=>{
+                console.error("Error calling repository to get subjects and topic simulations", e);
+            });
         return serviceResponse;
     },
     addQuestion: async (question: Question) => {
