@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CommonLayout from './components/layouts/commonLayout/CommonLayout';
 import CandidateHome from './components/home/candidateHome/CandidateHome';
 import LoginHome from './components/home/login/LoginHome';
+import EvaluateExam from './components/functional/exam/EvaluateExam';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path='/' element={<CommonLayout/>}>
             <Route index element={<LoginHome/>}/>
             <Route path='/home' element={<CandidateHome/>}/>
+            <Route path = "exam/evaluate" element={<EvaluateExam/>}/>
             <Route path = "exam/:examId" element={<ActiveExam/>}/>
           </Route>
         </Routes>

@@ -54,3 +54,7 @@ export type ActiveExams = {
     exams: {id: string, title: string}[]
 }
 
+export type ExamResultSummary = {
+    totalMarks: number,
+    score: number
+}

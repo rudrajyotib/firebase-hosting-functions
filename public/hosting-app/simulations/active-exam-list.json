@@ -5,5 +5,12 @@
         "examineeId": "examinee1",
         "organiser": "organiser 1",
         "status": "Ready"
+    },
+    {
+        "id": "examInstance2",
+        "label": "Grade 3 English Easy  by Harvest International School",
+        "examineeId": "examinee1",
+        "organiser": "organiser 1",
+        "status": "Ready"
     }
 ]

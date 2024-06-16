@@ -11,3 +11,5 @@ export type ActiveExamQueryResponseDefinition = {id: string
 export type ApiSubmitAnswerRequest = {"questionId": string, "option": number}
 export type ApiSubmitAnswerResponse = {responseCode: number, allAnswered: boolean, nextQuestion?: QuestionWithIdAndIndex, secondsRemaining: number, questionIndex: number}
 export type QuestionWithIdAndIndex = {question: ResponseQuestionBody, id: string}
+export type EvaluationRequest = {examineeId: string, examInstanceId: string}
+export type EvaluationResponse = {examineeId: string, examInstanceId: string, totalMarks: number, totalScore: number}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ExamService from "../../../services/ExamService";
 import { ExamResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse } from "../../../services/types/domain/ExamData";
 import TimedQuestionAnswerInteraction from "./console/TimedQuestionAnswerInteraction";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import AllQuestionsAnswered from "./AllQuestionsAnswered";
 import TimeOut from "./TimeOut";
 
@@ -23,6 +23,9 @@ interface QuestionDisplay {
 
 
 const ActiveExam = () => {
+
+    const navigate = useNavigate()
+
 
     let examId = useRef(useParams()['examId']).current;
     const examineeId = localStorage.getItem('examineeId')
@@ -50,6 +53,7 @@ const ActiveExam = () => {
             return;
         }
         examStarted.current = true;
+        localStorage.setItem('examInstanceId', examState.examId)
         if (examState.state === 'initialising' && examineeId && examineeId !== "" ) {
             console.log('question state is initialising')
 
@@ -137,6 +141,7 @@ const ActiveExam = () => {
                         return newState
                     })
                 }else if (response.staus === 'AllAnswered'){
+                    navigate("/exam/evaluate")
                     setExamState((currentState: ExamState) => {
                         const newState: ExamState = { ...currentState }
                         newState.state = 'finalAnswerSubmitted'
@@ -159,11 +164,9 @@ const ActiveExam = () => {
             }
         }}
         secondsRemaining={examState.secondsRemaining}
-        onTimeout={() => { setExamState((currentState: ExamState)=>{
-            const newState: ExamState = {...currentState}
-            newState.state = 'timedout'
-            return newState
-        }) }}
+        onTimeout={() => { 
+            navigate("/exam/evaluate")
+        }}
     />
     }
     if (examState.state === 'finalAnswerSubmitted'){

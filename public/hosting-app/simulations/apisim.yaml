@@ -77,20 +77,40 @@ request:
 - method: POST
 - uriPath: /exams/start
 
+javascriptExecutor:
+  is: scriptExecutor
+  lang: javascript
+  libs:
+  - "${sim.path}"
+
+ExamInstanceIdFromBody:
+  is: parameter
+  from: body
+  element: ".examInstanceId"
+
+VerificationScript:
+  is: script
+  executor: javascriptExecutor
+  expression: "startExam('ExamInstanceIdFromBody')"
+
+VerfiiedData:
+  is: parameter 
+  from: script
+  script: "VerificationScript"
+
 
 response:
-  from: stub
-  
-  # If not configured the status will be defaulted to 200 
+  from: template
+  template: Simula
+
   status: 200
-  
+
   headers:
-  - "Content-Type: application/json;"
-  
-  # When the body uses the default UTF-8 charset, the body
-  # content can be specified directly as a value like this:
-  body: 
-    file: "${simlet.path}/success-exam-start.json"
+   - "Content-Type: application/json;"
+
+  body: `
+    ${VerfiiedData}
+  `
 ---
 
 simlet: submit-answer
@@ -118,7 +138,7 @@ QuestionIndexFromBody:
 VerificationScript:
   is: script
   executor: javascriptExecutor
-  expression: "acceptAnswerSubmissionHappyPathOnly('NameFromBody')"
+  expression: "acceptAnswerSubmissionHappyPathOnly('NameFromBody','QuestionIndexFromBody')"
 
 VerfiiedData:
   is: parameter 
@@ -138,3 +158,84 @@ response:
     ${VerfiiedData}
   `
     
+---
+
+simlet: query-user-by-name
+
+request:
+- method: GET
+- uriPath: /user/userByName
+
+javascriptExecutor:
+  is: scriptExecutor
+  lang: javascript
+  libs:
+  - "${sim.path}"
+
+UserName:
+  is: parameter
+  from: uriQueryParameter
+  named: userName
+
+VerificationScript:
+  is: script
+  executor: javascriptExecutor
+  expression: "userDetails('UserName')"
+
+VerfiiedData:
+  is: parameter 
+  from: script
+  script: "VerificationScript"
+
+response:
+  from: template
+  template: Simula
+
+  status: 200
+
+  headers:
+   - "Content-Type: application/json;"
+
+  body: `
+    ${VerfiiedData}
+  `
+    
+
+---
+
+simlet: evaluate
+
+request:
+- method: POST
+- uriPath: /exams/evaluate
+
+javascriptExecutor:
+  is: scriptExecutor
+  lang: javascript
+  libs:
+  - "${sim.path}"
+
+VerificationScript:
+  is: script
+  executor: javascriptExecutor
+  expression: "evaluate()"
+
+VerfiiedData:
+  is: parameter 
+  from: script
+  script: "VerificationScript"
+
+response:
+  from: template
+  template: Simula
+
+  status: 200
+
+  headers:
+   - "Content-Type: application/json;"
+
+  body: `
+    ${VerfiiedData}
+  `
+    
+---

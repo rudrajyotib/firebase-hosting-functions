@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse } from "./types/domain/ExamData"
-import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary } from "./types/domain/ExamData"
+import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, EvaluationRequest, EvaluationResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 
 const ExamService = {
 
@@ -133,6 +133,39 @@ const ExamService = {
             }
         }).catch((error)=>{
             console.log('error in submitting', error)
+        })
+    },
+
+    evaluate: (request: EvaluationRequest, 
+            successCallback: ((evalSummary: ExamResultSummary)=> void),
+            failureCallBack: (()=>void)) => {
+        console.log('Evaluating exam')
+        axios.post("/api/exams/evaluate", 
+            request,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if (status === 200 || status === 400){
+                        return true
+                    }
+                    return false
+                }
+            }
+        ).then((res: AxiosResponse) => {
+            if (res.status === 200) {
+                const evalSummary: EvaluationResponse = res.data
+                const examSummary: ExamResultSummary = {
+                    totalMarks: evalSummary.totalMarks,
+                    score: evalSummary.totalScore
+                }
+                successCallback(examSummary)
+            } else {
+                failureCallBack();
+            }
+        }).catch((e)=>{
+            failureCallBack();
         })
     }
 }

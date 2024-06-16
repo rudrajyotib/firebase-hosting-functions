@@ -6,7 +6,7 @@
         "options": ["1947", "1946", "1944", "1943"],
         "questionId": "Q1"
     }, 
-    "secondsRemaining":2000,
+    "secondsRemaining":5,
     "questionId": "Q1",
     "totalQuestions": 10,
     "questionIndex": 0
