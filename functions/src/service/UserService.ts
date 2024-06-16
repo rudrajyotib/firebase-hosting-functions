@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {ExamineeBuilder} from "../model/Examinee";
+import {OrganiserBuilder} from "../model/Organiser";
 import {User} from "../model/User";
 import {ExamRepository} from "../repository/ExamRepository";
 import {UserRepository} from "../repository/UserRepository";
@@ -24,6 +25,14 @@ export const UserService = {
                 return response;
             }
             user.orgId = createExamineeResponse.data;
+        } else if (user.role === "org-admin" ) {
+            const createOrgResponse: RepositoryResponse<string> =
+                await ExamRepository
+                    .addOrganiser(new OrganiserBuilder().withName(user.name).build());
+            if (createOrgResponse.responseCode !== 0 || !createOrgResponse.data) {
+                return response;
+            }
+            user.orgId = createOrgResponse.data;
         }
         await UserRepository.addUser(user)
             .then((repoResponse: RepositoryResponse<string>) => {
