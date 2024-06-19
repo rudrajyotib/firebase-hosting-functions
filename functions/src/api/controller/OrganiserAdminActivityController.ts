@@ -11,7 +11,6 @@ import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTop
 import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
 import {Question, QuestionBuilder} from "../../model/Question";
 import {ExamineeBuilder} from "../../model/Examinee";
-import {ExamService} from "../../service/ExamService";
 import {SubjectAndTopicSummary} from "../../model/SubjectAndTopicSummary";
 
 

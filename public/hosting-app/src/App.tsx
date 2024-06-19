@@ -6,6 +6,9 @@ import CommonLayout from './components/layouts/commonLayout/CommonLayout';
 import CandidateHome from './components/home/candidateHome/CandidateHome';
 import LoginHome from './components/home/login/LoginHome';
 import EvaluateExam from './components/functional/exam/EvaluateExam';
+import AdminHome from './components/home/adminHome/AdminHome';
+import Subjects from './components/functional/admin/Subjects';
+import AdminLayout from './components/layouts/adminLayout/AdminLayout';
 
 function App() {
   return (
@@ -14,6 +17,10 @@ function App() {
         <Routes>
           <Route path='/' element={<CommonLayout/>}>
             <Route index element={<LoginHome/>}/>
+            <Route path='/admin' element={<AdminLayout/>}>
+              <Route index element={<AdminHome/>}/>
+              <Route path="subjects" element={<Subjects/>}/>
+            </Route>
             <Route path='/home' element={<CandidateHome/>}/>
             <Route path = "exam/evaluate" element={<EvaluateExam/>}/>
             <Route path = "exam/:examId" element={<ActiveExam/>}/>

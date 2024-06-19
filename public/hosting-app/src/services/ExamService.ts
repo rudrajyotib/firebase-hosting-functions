@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary } from "./types/domain/ExamData"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, EvaluationRequest, EvaluationResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 
 const ExamService = {
@@ -167,7 +167,37 @@ const ExamService = {
         }).catch((e)=>{
             failureCallBack();
         })
-    }
+    },
+
+    listOfSubjectsAndTopics: (organiserId: string,
+        successCallback: ((subjectsAndTopics: SubjectAndTopicSummary[]) => void),
+        failureCallBack: (()=>void) ) => {
+            axios.get("/api/org/subjects?orgId="+organiserId,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if (status === 200 || status === 400){
+                        return true
+                    }
+                    return false
+                }
+            }
+            ).then((res: AxiosResponse) => {
+                if (res.status === 200) {
+                    const summaryLines: SubjectAndTopicSummary[] = res.data;
+                    successCallback(summaryLines);
+                }else {
+                    failureCallBack();
+                }
+            })
+            .catch((e)=>{
+                console.error("Error in http controller", e);
+                failureCallBack();
+            })
+        },
+
 }
 
 export default ExamService

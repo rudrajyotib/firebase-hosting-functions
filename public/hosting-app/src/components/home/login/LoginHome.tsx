@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { CandidateLoginState } from "../types/LoginPropsAndStates"
+import { LoginState } from "../types/LoginPropsAndStates"
 import { Button, TextInput } from "rb-base-element"
 import LoginService from "../../../services/LoginService"
 import { StudentUserContext } from "../../../services/types/domain/UserData"
@@ -9,11 +9,12 @@ const LoginHome = (props: any) => {
 
     const navigate = useNavigate()
 
-    const [loginState, setLoginState] = useState<CandidateLoginState> ({
+    const [loginState, setLoginState] = useState<LoginState> ({
         status: 'NotAttempted',
         userName: '',
         attemptCount: 0,
-        examineeId: ''
+        examineeId: '',
+        userType: 'NotAttempted'
     })
 
     var successMessage = <></>
@@ -28,8 +29,8 @@ const LoginHome = (props: any) => {
             <TextInput 
                 name="CandidateLoginName" 
                 onChangeHandler={(text:string)=>{
-                    setLoginState((presentState: CandidateLoginState)=>{
-                        const newState: CandidateLoginState = { ...presentState }
+                    setLoginState((presentState: LoginState)=>{
+                        const newState: LoginState = { ...presentState }
                         newState.userName = text
                         return newState
                     })
@@ -38,18 +39,34 @@ const LoginHome = (props: any) => {
                 textType="alphanumeric"
                 value=""
                 />
-            <Button importance="primary" name="Login" onClick={()=>{
+                <div style={{display:'flex'}}>
+            <Button importance="primary" name="Candidate login" onClick={()=>{
                 LoginService.authenticateStudent(loginState.userName,
                     (response: StudentUserContext) => {
-                        setLoginState((currentState: CandidateLoginState) => {
-                        const newState: CandidateLoginState = { ...currentState }
+                        setLoginState((currentState: LoginState) => {
+                        const newState: LoginState = { ...currentState }
                         newState.status = "LoggedIn"
+                        newState.userType = 'Candidate'
                         return newState
                         })
                         navigate("/home")
                     }
                 )
             }}/>
+            <Button importance="primary" name="Admin Login" onClick={()=>{
+                LoginService.authenticateStudent(loginState.userName,
+                    (response: StudentUserContext) => {
+                        setLoginState((currentState: LoginState) => {
+                        const newState: LoginState = { ...currentState }
+                        newState.status = "LoggedIn"
+                        newState.userType = 'Admin'
+                        return newState
+                        })
+                        navigate("/admin")
+                    }
+                )
+            }}/>
+            </div>
             {successMessage}
         </div>
     )

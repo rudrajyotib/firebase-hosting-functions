@@ -58,3 +58,11 @@ export type ExamResultSummary = {
     totalMarks: number,
     score: number
 }
+
+export type SubjectAndTopicSummary = {
+    grade: number,
+    topic: string,
+    subject: string,
+    id: string,
+    title: string
+}

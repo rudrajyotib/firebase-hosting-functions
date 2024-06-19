@@ -1,6 +1,7 @@
-export type CandidateLoginState = {
+export type LoginState = {
     status: 'NotAttempted' | 'LoggedIn' | 'WrongCredentials',
     userName: string,
     attemptCount : number,
-    examineeId: string
+    examineeId: string,
+    userType: 'NotAttempted' | 'Candidate' | 'Admin'
 }

@@ -50,3 +50,12 @@ export type ApiSubmitAnswerResponse = {
     nextQuestion?: QuestionWithId,
     secondsRemaining: number
 }
+
+export type SubjectsAndTopicsSummaryResponse = {
+    grade: number,
+    topic: string,
+    subject: string,
+    id: string,
+    title: string
+}
+
