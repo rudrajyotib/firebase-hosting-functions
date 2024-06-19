@@ -9,6 +9,7 @@ import EvaluateExam from './components/functional/exam/EvaluateExam';
 import AdminHome from './components/home/adminHome/AdminHome';
 import Subjects from './components/functional/admin/subjectAndTopics/Subjects';
 import AdminLayout from './components/layouts/adminLayout/AdminLayout';
+import AddSubjectAndTopic from './components/functional/admin/subjectAndTopics/AddSubjectAndTopic';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route index element={<LoginHome/>}/>
             <Route path='/admin' element={<AdminLayout/>}>
               <Route index element={<AdminHome/>}/>
+              <Route path="addsubject" element={<AddSubjectAndTopic/>}/>
               <Route path="subjects" element={<Subjects/>}/>
             </Route>
             <Route path='/home' element={<CandidateHome/>}/>

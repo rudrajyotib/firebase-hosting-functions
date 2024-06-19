@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ExamService from "../../../services/ExamService";
 import { ExamResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse } from "../../../services/types/domain/ExamData";
 import TimedQuestionAnswerInteraction from "./console/TimedQuestionAnswerInteraction";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AllQuestionsAnswered from "./AllQuestionsAnswered";
 import TimeOut from "./TimeOut";
 

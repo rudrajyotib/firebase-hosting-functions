@@ -66,3 +66,11 @@ export type SubjectAndTopicSummary = {
     id: string,
     title: string
 }
+
+export type AddSubjectAndTopicRequest = {
+    grade: number,
+    topic: string,
+    subject: string,
+    title: string,
+    organiserId: string
+}

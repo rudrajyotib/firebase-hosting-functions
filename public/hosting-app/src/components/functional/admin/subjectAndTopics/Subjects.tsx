@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { SingleSubjectAndTopicDisplayProp } from "../../types/SubjectAndTopicDisplayProps"
 import SingleSubjectDisplay from "./SingleSubjectDisplay"
-import { useParams } from "react-router-dom"
 import ExamService from "../../../../services/ExamService"
 import { SubjectAndTopicSummary } from "../../../../services/types/domain/ExamData"
+import { Button } from "rb-base-element"
+import { useNavigate } from "react-router-dom"
 
 type SubjectAndTopicsListState = {
     status: 'topicsLoaded' | 'topicsLoading' | 'loadingFailed'
@@ -12,7 +13,7 @@ type SubjectAndTopicsListState = {
 
 const Subjects = () => {
     
-    
+    const navigate = useNavigate()
 
     
     let listRequestedRef = useRef(false)
@@ -86,11 +87,17 @@ const Subjects = () => {
         )}</div>
     }
 
+    var addSubjectButton = <div>
+        <Button name="addSubject" importance="primary" onClick={()=>{
+            navigate("/admin/addsubject")
+        }}/>
+    </div>
+
     return (<div>
         Subjects of Admin
         
         {listContent}
-
+        {addSubjectButton}
     </div>)
 }
 
