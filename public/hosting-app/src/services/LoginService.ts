@@ -1,22 +1,22 @@
 import axios, { AxiosResponse } from "axios";
-import { StudentUserContext } from "./types/domain/UserData";
+import { UserContext } from "./types/domain/UserData";
 import { SearchUserResponse } from "./types/api/UserApi";
 
 const LoginService = {
     authenticateStudent : (userName: string, 
-            successCallback: (response: StudentUserContext) => void,
+            successCallback: (response: UserContext) => void,
     ) => {
         axios.get("/api/user/userByName?userName="+userName)
             .then((res: AxiosResponse) => {
                 const status = res.status;
                 if (status === 200 ) {
                     const user: SearchUserResponse = res.data;
-                    const studentUserContext: StudentUserContext = {
+                    const userContext: UserContext = {
                         userId: user.userId,
-                        examineeId: user.entityId
+                        entityId: user.entityId
                     }
-                    localStorage.setItem('examineeId', studentUserContext.examineeId)
-                    successCallback(studentUserContext);
+                    localStorage.setItem('entityId', userContext.entityId)
+                    successCallback(userContext);
                 } else {
                     console.error("Login failed");
                 }

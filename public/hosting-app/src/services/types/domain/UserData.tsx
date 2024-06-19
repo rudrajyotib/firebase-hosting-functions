@@ -1,4 +1,4 @@
-export type StudentUserContext = {
+export type UserContext = {
     userId: string,
-    examineeId: string,
+    entityId: string,
 }

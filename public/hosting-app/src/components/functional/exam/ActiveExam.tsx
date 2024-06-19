@@ -28,7 +28,7 @@ const ActiveExam = () => {
 
 
     let examId = useRef(useParams()['examId']).current;
-    const examineeId = localStorage.getItem('examineeId')
+    const examineeId = localStorage.getItem('entityId')
     const examStarted = useRef(false);
 
     const [examState, setExamState] = useState<ExamState>({

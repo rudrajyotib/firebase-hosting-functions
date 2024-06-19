@@ -2,7 +2,7 @@ import { useState } from "react"
 import { LoginState } from "../types/LoginPropsAndStates"
 import { Button, TextInput } from "rb-base-element"
 import LoginService from "../../../services/LoginService"
-import { StudentUserContext } from "../../../services/types/domain/UserData"
+import { UserContext } from "../../../services/types/domain/UserData"
 import { useNavigate } from "react-router-dom"
 
 const LoginHome = (props: any) => {
@@ -42,7 +42,7 @@ const LoginHome = (props: any) => {
                 <div style={{display:'flex'}}>
             <Button importance="primary" name="Candidate login" onClick={()=>{
                 LoginService.authenticateStudent(loginState.userName,
-                    (response: StudentUserContext) => {
+                    (response: UserContext) => {
                         setLoginState((currentState: LoginState) => {
                         const newState: LoginState = { ...currentState }
                         newState.status = "LoggedIn"
@@ -55,7 +55,7 @@ const LoginHome = (props: any) => {
             }}/>
             <Button importance="primary" name="Admin Login" onClick={()=>{
                 LoginService.authenticateStudent(loginState.userName,
-                    (response: StudentUserContext) => {
+                    (response: UserContext) => {
                         setLoginState((currentState: LoginState) => {
                         const newState: LoginState = { ...currentState }
                         newState.status = "LoggedIn"

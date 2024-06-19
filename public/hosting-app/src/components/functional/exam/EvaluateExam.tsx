@@ -22,7 +22,7 @@ const EvaluateExam = () => {
     
     useEffect(()=>{
         if (evaluationAttempted.current === false) {
-            const examineeId = localStorage.getItem("examineeId")
+            const examineeId = localStorage.getItem("entityId")
             const examInstanceId = localStorage.getItem("examInstanceId")
             if (!examineeId || !examInstanceId) {
                 return;

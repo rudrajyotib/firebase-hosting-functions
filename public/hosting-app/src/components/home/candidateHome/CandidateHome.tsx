@@ -13,7 +13,7 @@ interface AvailableExams {
 
 const CandidateHome = (props:any) => {
 
-    const [studentId] = useState(localStorage.getItem('examineeId'))
+    const [studentId] = useState(localStorage.getItem('entityId'))
     const [availableExams, setAvailableExams] = useState<AvailableExams>({
         queryState: 'loading',
         exams: []

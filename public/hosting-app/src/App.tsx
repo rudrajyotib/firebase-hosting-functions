@@ -7,7 +7,7 @@ import CandidateHome from './components/home/candidateHome/CandidateHome';
 import LoginHome from './components/home/login/LoginHome';
 import EvaluateExam from './components/functional/exam/EvaluateExam';
 import AdminHome from './components/home/adminHome/AdminHome';
-import Subjects from './components/functional/admin/Subjects';
+import Subjects from './components/functional/admin/subjectAndTopics/Subjects';
 import AdminLayout from './components/layouts/adminLayout/AdminLayout';
 
 function App() {

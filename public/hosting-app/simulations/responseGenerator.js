@@ -112,3 +112,23 @@ function startExam(examInstanceId) {
     }
    return JSON.stringify(startExamResponse)
 }
+
+function listOfSubjectAndTopics(){
+    var subjects=[
+        {
+          grade: 3,
+          subject: "English",
+          title: "Grade 3 English Tense Easy",
+          id: "Sub1",
+          topic: "Tenses"
+        },
+        {
+          grade: 3,
+          subject: "English",
+          title: "Grade 3 English Verbs Easy",
+          id: "Sub1",
+          topic: "Verbs"
+        }
+      ]
+    return JSON.stringify(subjects);
+}
