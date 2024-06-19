@@ -27,6 +27,31 @@ export const QuestionRepository = {
         return response;
     },
 
+    getQuestionByOrganiserAndTopic: async function(organiserId: string, topicId: string)
+        : Promise<RepositoryResponse<Question[]>> {
+        const response: RepositoryResponse<Question[]> = {
+            responseCode: -1,
+        };
+        const questions: Question[] = [];
+        let orgBasedQuery: FirebaseFirestore.Query<Question> = repository
+            .collection("Question")
+            .withConverter(QuestionConverter)
+            .where("orgainserId", "==", organiserId);
+        if (topicId != undefined && topicId.trim() !== "") {
+            orgBasedQuery = orgBasedQuery.where("topics", "array-contains", topicId);
+        }
+        await orgBasedQuery
+            .get()
+            .then((snapshot: FirebaseFirestore.QuerySnapshot<Question>)=>{
+                snapshot.forEach((element)=>{
+                    questions.push(element.data());
+                });
+                response.data = questions;
+                response.responseCode = 0;
+            });
+        return response;
+    },
+
     addQuestion: async function(question: Question): Promise<RepositoryResponse<string>> {
         const response: RepositoryResponse<string> = {
             responseCode: -1,

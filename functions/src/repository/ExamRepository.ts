@@ -22,7 +22,7 @@ import {Organiser} from "../model/Organiser";
 import {OrganiserConverter} from "./converters/OrganiserConverter";
 import {ExamTemplate} from "../model/ExamTemplate";
 import {ExamTemplateConverter} from "./converters/ExamTemplateConverter";
-import { SubjectAndTopicSummary } from "../model/SubjectAndTopicSummary";
+import {SubjectAndTopicSummary} from "../model/SubjectAndTopicSummary";
 // import {collection, query, where} from "firebase/firestore";
 
 const repository = source.repository;

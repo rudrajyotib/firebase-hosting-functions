@@ -469,4 +469,17 @@ export const ExamAdminService = {
         serviceResponse.responseCode = repositoryResponse.responseCode;
         return serviceResponse;
     },
+    retrieveQuestionByOrganiserAndTopic:
+        async (organiserId: string, topicId: string): Promise<ServiceResponse<Question[]>> => {
+            const serviceResponse: ServiceResponse<Question[]> = {
+                responseCode: -1,
+            };
+            const repositoryResponse: RepositoryResponse<Question[]> =
+                await QuestionRepository.getQuestionByOrganiserAndTopic(organiserId, topicId);
+            if (repositoryResponse.responseCode === 0) {
+                serviceResponse.responseCode = 0;
+                serviceResponse.data = repositoryResponse.data;
+            }
+            return serviceResponse;
+        },
 };

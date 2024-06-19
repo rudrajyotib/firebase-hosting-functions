@@ -4,7 +4,7 @@ import {Request, Response} from "express";
 import {ExamAdminService} from "../../service/ExamAdminService";
 import {OrganiserBuilder} from "../../model/Organiser";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
-import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse} from "../interfaces/OrganiserInteractionDto";
+import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse} from "../interfaces/OrganiserInteractionDto";
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
@@ -358,6 +358,43 @@ export const ListOfSubjectAndTopicsByOrg =
             })
             .catch((e)=> {
                 console.error("Error getting list of subjects and topics from service in controller", e);
+                res.status(500).send();
+            });
+    };
+
+export const ListQuestionsByOrganiserAndTopic =
+    async (req: Request, res: Response) => {
+        const organiserId: string = ""+req.query.organiserId;
+        const subjectAndTopicId: string = req.query.topicId == undefined ? "" :""+req.query.topicId;
+
+        if (organiserId.trim() === "") {
+            res.status(400).send();
+            return;
+        }
+        ExamAdminService
+            .retrieveQuestionByOrganiserAndTopic(organiserId, subjectAndTopicId)
+            .then((serviceResponse: ServiceResponse<Question[]>)=>{
+                if (serviceResponse.responseCode === 0 && serviceResponse.data) {
+                    const questions: Question[] = serviceResponse.data;
+                    const responseBody: QuestionSummary[] = [];
+                    questions.forEach((q)=>{
+                        const qSummary: QuestionSummary = {
+                            format: q.format,
+                            questionLines: q.questionLines,
+                            options: q.options,
+                            correctOptionIndex: q.correctOptionIndex,
+                            id: q.id,
+                            status: q.status,
+                            organiserId: q.organiserId,
+                        };
+                        responseBody.push(qSummary);
+                    });
+                    res.status(200).send(responseBody);
+                } else {
+                    res.status(500).send();
+                }
+            })
+            .catch((e)=> {
                 res.status(500).send();
             });
     };

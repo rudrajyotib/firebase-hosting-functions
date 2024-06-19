@@ -56,3 +56,13 @@ export type SubjectsAndTopicsSummaryResponse = {
     id: string,
     title: string
 }
+
+export type QuestionSummary = {
+    format: string;
+    questionLines : string[];
+    options: string[];
+    correctOptionIndex : number;
+    id: string;
+    status: string;
+    organiserId: string;
+}
