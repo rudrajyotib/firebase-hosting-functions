@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest } from "./types/domain/ExamData"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, EvaluationRequest, EvaluationResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
+import { QuestionSummaryResponse } from "./types/api/ExamInteractionDto"
 
 const ExamService = {
 
@@ -208,7 +209,7 @@ const ExamService = {
                         'Accept' : 'application/JSON'
                     },
                     validateStatus: (status:number) =>{
-                        if (status === 201 || status === 400){
+                        if (status === 200 || status === 400){
                             return true
                         }
                         return false
@@ -221,6 +222,46 @@ const ExamService = {
             })
         },
     
+    listQuestionsByOrgIdAndTopic: (orgId: string, 
+        topicId: string,
+        successCallback:(questions: QuestionSummary[])=>void,
+        failureCallBack:() => void) =>{
+            let queryParam = '?organiserId='+orgId
+            if (topicId.trim() !== '') {
+                queryParam = queryParam + "&topicId=" + topicId
+            }
+            axios.get("/api/org/questionsbyorganiserandtopic"+queryParam,
+                {
+                    'headers' : {
+                        'Accept' : 'application/JSON'
+                    },
+                    validateStatus: (status:number) =>{
+                        if (status === 200 ){
+                            return true
+                        }
+                        return false
+                    }
+                }
+            ).then ((res:AxiosResponse)=>{
+                const questionSummaryRes: QuestionSummaryResponse[] = res.data
+                const questionSummary: QuestionSummary[] = []
+                questionSummaryRes.forEach((q)=>{
+                    questionSummary.push({
+                        format: q.format,
+                        id: q.id,
+                        status: q.status, 
+                        options: q.options,
+                        questionLines: q.questionLines,
+                        organiserId: orgId,
+                        correctOptionIndex: q.correctOptionIndex
+                    })
+                })
+                successCallback(questionSummary)
+            })
+            .catch(()=>{
+                failureCallBack();
+            })
+        }
 
 }
 

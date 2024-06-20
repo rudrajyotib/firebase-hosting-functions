@@ -10,6 +10,7 @@ import AdminHome from './components/home/adminHome/AdminHome';
 import Subjects from './components/functional/admin/subjectAndTopics/Subjects';
 import AdminLayout from './components/layouts/adminLayout/AdminLayout';
 import AddSubjectAndTopic from './components/functional/admin/subjectAndTopics/AddSubjectAndTopic';
+import QuestionsHome from './components/functional/admin/questions/QuestionsHome';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               <Route index element={<AdminHome/>}/>
               <Route path="addsubject" element={<AddSubjectAndTopic/>}/>
               <Route path="subjects" element={<Subjects/>}/>
+              <Route path='questions' element={<QuestionsHome/>}/>
             </Route>
             <Route path='/home' element={<CandidateHome/>}/>
             <Route path = "exam/evaluate" element={<EvaluateExam/>}/>
