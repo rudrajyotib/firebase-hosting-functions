@@ -1,4 +1,4 @@
-import { FormEventHandler, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ExamService from "../../../../services/ExamService"
 import { QuestionSummary, SubjectAndTopicSummary } from "../../../../services/types/domain/ExamData"
 import { Button } from "rb-base-element"
@@ -52,7 +52,7 @@ const QuestionsHome = () => {
                 return newState
             })
         })
-     },[])
+     },[questionHomeState.organiserId])
 
      let subjectDropdown = <></>
      if (questionHomeState.subjectsLoadStatus === 'loaded'){

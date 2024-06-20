@@ -11,6 +11,7 @@ import Subjects from './components/functional/admin/subjectAndTopics/Subjects';
 import AdminLayout from './components/layouts/adminLayout/AdminLayout';
 import AddSubjectAndTopic from './components/functional/admin/subjectAndTopics/AddSubjectAndTopic';
 import QuestionsHome from './components/functional/admin/questions/QuestionsHome';
+import AddSingleQuestion from './components/functional/admin/questions/AddSingleQuestion';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               <Route path="addsubject" element={<AddSubjectAndTopic/>}/>
               <Route path="subjects" element={<Subjects/>}/>
               <Route path='questions' element={<QuestionsHome/>}/>
+              <Route path="addSingleQuestion" element={<AddSingleQuestion/>}/>
             </Route>
             <Route path='/home' element={<CandidateHome/>}/>
             <Route path = "exam/evaluate" element={<EvaluateExam/>}/>

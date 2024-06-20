@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary } from "./types/domain/ExamData"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary, SingleQuestionRequest } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, EvaluationRequest, EvaluationResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 import { QuestionSummaryResponse } from "./types/api/ExamInteractionDto"
 
@@ -261,7 +261,31 @@ const ExamService = {
             .catch(()=>{
                 failureCallBack();
             })
+        },
+    
+    addSingleQuestion: (singleQuestionRequest: SingleQuestionRequest,
+        successCallback: ()=>void,
+        failureCallBack:()=>void ) =>{
+            axios.post("/api/org/addquestion", 
+                singleQuestionRequest, 
+                {
+                    'headers' : {
+                        'Accept' : 'application/JSON'
+                    },
+                    validateStatus: (status:number) =>{
+                        if (status === 200 || status === 400 || status === 201){
+                            return true
+                        }
+                        return false
+                    }
+                }
+            ).then((res: AxiosResponse)=>{
+                successCallback()
+            }).catch(()=>{
+                failureCallBack()
+            })
         }
+    
 
 }
 

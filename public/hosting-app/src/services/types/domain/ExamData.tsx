@@ -84,3 +84,12 @@ export type QuestionSummary = {
     status: string;
     organiserId: string;
 }
+
+export type SingleQuestionRequest = {
+    format: string;
+    questionLines: string[];
+    options: string[];
+    correctOptionIndex: number;
+    organiserId: string;
+    topicId: string;
+}
