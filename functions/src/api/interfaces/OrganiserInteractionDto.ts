@@ -8,6 +8,7 @@ export type CreateSyllabusRequest = {
     totalMarks: number,
     title: string,
     organiserId: string,
+    topics?: TopicAndQuestionCountRequest[]
 }
 
 export type TopicAndQuestionCountRequest = {

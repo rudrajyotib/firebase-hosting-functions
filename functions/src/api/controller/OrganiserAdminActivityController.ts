@@ -39,13 +39,22 @@ export const AddOrganiser =
 export const AddSyllabus =
     async (req: Request, res: Response) => {
         const createSyllabusRequest : CreateSyllabusRequest = req.body as CreateSyllabusRequest;
-        const syllabus: Syllabus = new SyllabusBuilder()
+        const syllabusBuilder: SyllabusBuilder = new SyllabusBuilder()
             .withDuration(createSyllabusRequest.duration)
             .withStatus("Active")
             .withSubject(createSyllabusRequest.subject)
             .withTitle(createSyllabusRequest.title)
-            .withOrganiserId(createSyllabusRequest.organiserId)
-            .build();
+            .withOrganiserId(createSyllabusRequest.organiserId);
+        if (createSyllabusRequest.topics && createSyllabusRequest.topics.length > 0) {
+            createSyllabusRequest.topics.forEach((t)=>{
+                syllabusBuilder.withTopicAndQuestionCounts({
+                    subjectAndTopicId: t.subjectAndTopicId,
+                    count: t.count,
+                    weightage: t.weightage,
+                });
+            });
+        }
+        const syllabus = syllabusBuilder.build();
         if (!syllabus.isValid()) {
             res.status(400).send();
             return;
