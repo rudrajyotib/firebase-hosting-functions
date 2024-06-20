@@ -222,14 +222,15 @@ export const CreateQuestion =
                 questionBuilder.withOption(option);
             });
         }
-
+        if (createQuestionRequest.topicId && createQuestionRequest.topicId.trim() != "") {
+            questionBuilder.withSubjectAndTopicId(createQuestionRequest.topicId.trim());
+        }
         const question: Question = questionBuilder.build();
         if (question.isValid() === false) {
             console.log("Question is not valid");
             res.status(400).send();
             return;
         }
-        console.log("Question is valid");
         ExamAdminService.addQuestion(question)
             .then((serviceResponse: ServiceResponse<string>) =>{
                 if (serviceResponse.responseCode === 0) {

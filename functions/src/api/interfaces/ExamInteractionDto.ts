@@ -12,6 +12,7 @@ export type CreateQuestionRequest = {
     organiserId: string;
     tags: string[];
     questionId: string;
+    topicId: string;
 }
 export type SubmitAnswerRequest = {
     questionId: string,
