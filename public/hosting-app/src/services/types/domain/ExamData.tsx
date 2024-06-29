@@ -93,3 +93,12 @@ export type SingleQuestionRequest = {
     organiserId: string;
     topicId: string;
 }
+
+export type AddSyllabusRequest = {
+    subject: string,
+    duration: number, 
+    totalMarks: number,
+    organiserId: string,
+    title: string,
+    topics:  {subjectAndTopicId: string, weightage: number, count: number}[]
+}

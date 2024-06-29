@@ -5,7 +5,7 @@ import {ExamAdminService} from "../../service/ExamAdminService";
 import {OrganiserBuilder} from "../../model/Organiser";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
 import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse} from "../interfaces/OrganiserInteractionDto";
-import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
+import {SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
 import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
@@ -39,12 +39,23 @@ export const AddOrganiser =
 export const AddSyllabus =
     async (req: Request, res: Response) => {
         const createSyllabusRequest : CreateSyllabusRequest = req.body as CreateSyllabusRequest;
+
+
         const syllabusBuilder: SyllabusBuilder = new SyllabusBuilder()
             .withDuration(createSyllabusRequest.duration)
             .withStatus("Active")
             .withSubject(createSyllabusRequest.subject)
             .withTitle(createSyllabusRequest.title)
             .withOrganiserId(createSyllabusRequest.organiserId);
+        if (createSyllabusRequest.topics && createSyllabusRequest.topics.length > 0 ) {
+            const topicsBuilder: TopicAndQuestionCountBuilder = new TopicAndQuestionCountBuilder();
+            createSyllabusRequest.topics.forEach((t)=>{
+                topicsBuilder.withCount(t.count);
+                topicsBuilder.withSubjectAndTopicId(t.subjectAndTopicId);
+                topicsBuilder.withWeightage(t.weightage);
+            });
+            syllabusBuilder.withTopicAndQuestionCounts(topicsBuilder.build());
+        }
         if (createSyllabusRequest.topics && createSyllabusRequest.topics.length > 0) {
             createSyllabusRequest.topics.forEach((t)=>{
                 syllabusBuilder.withTopicAndQuestionCounts({
