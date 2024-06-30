@@ -825,7 +825,28 @@ export const ExamRepository = {
                 repositoryResponse.data = syllabusList;
             })
             .catch((e)=>{
-                console.error("Error querying subjects and topics by organiserId", e);
+                console.error("Error querying syllabus by organiserId", e);
+            });
+        return repositoryResponse;
+    },
+    listExamsByOrganiser: async (organiserId: string) : Promise<RepositoryResponse<ExamTemplate[]>> => {
+        const repositoryResponse: RepositoryResponse<ExamTemplate[]> = {
+            responseCode: -1,
+        };
+        const syllabusList: ExamTemplate[] = [];
+        await repository.collection("Exam")
+            .withConverter(ExamTemplateConverter)
+            .where("organiserId", "==", organiserId)
+            .get()
+            .then((snapshot: FirebaseFirestore.QuerySnapshot<ExamTemplate>)=>{
+                snapshot.forEach((snap)=>{
+                    syllabusList.push(snap.data());
+                });
+                repositoryResponse.responseCode = 0;
+                repositoryResponse.data = syllabusList;
+            })
+            .catch((e)=>{
+                console.error("Error querying exam templates by organiserId", e);
             });
         return repositoryResponse;
     },

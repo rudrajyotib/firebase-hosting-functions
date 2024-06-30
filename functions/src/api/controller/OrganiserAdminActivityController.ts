@@ -4,7 +4,7 @@ import {Request, Response} from "express";
 import {ExamAdminService} from "../../service/ExamAdminService";
 import {OrganiserBuilder} from "../../model/Organiser";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
-import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse, SyllabusSummary} from "../interfaces/OrganiserInteractionDto";
+import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, ExamTemplateSummary, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse, SyllabusSummary} from "../interfaces/OrganiserInteractionDto";
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
@@ -287,6 +287,7 @@ export const CreateExamInstance =
     async (req: Request, res: Response) => {
         const createExamInstanceRequest: CreateExamInstanceRequest =
             req.body as CreateExamInstanceRequest;
+        console.log("Received request to create exam instance:"+JSON.stringify(createExamInstanceRequest));
         if (!createExamInstanceRequest.examTemplateId ||
             createExamInstanceRequest.examTemplateId === "" ||
             !createExamInstanceRequest.examineeId ||
@@ -300,6 +301,7 @@ export const CreateExamInstance =
             createExamInstanceRequest.organiserId,
             createExamInstanceRequest.examTemplateId)
             .then((serviceResponse: ServiceResponse<string>)=>{
+                console.log("Service response::"+JSON.stringify(serviceResponse));
                 if (serviceResponse.responseCode > 0 ) {
                     res.status(400).send();
                 } else if (serviceResponse.responseCode < 0) {
@@ -442,3 +444,38 @@ export const ListSyllabusByOrganiser =
                 res.status(500).send();
             });
     };
+
+export const ListExamTemplateByOrganiser =
+        async (req: Request, res: Response) => {
+            const organiserId: string = ""+req.query.organiserId;
+
+            if (organiserId.trim() === "") {
+                res.status(400).send();
+                return;
+            }
+            ExamAdminService
+                .listExamTemplateByOrganiser(organiserId)
+                .then((serviceResponse: ServiceResponse<ExamTemplate[]>)=>{
+                    if (serviceResponse.responseCode === 0 && serviceResponse.data) {
+                        const examTemplates: ExamTemplate[] = serviceResponse.data;
+                        const responseBody: ExamTemplateSummary[] = [];
+                        examTemplates.forEach((s)=>{
+                            const examTemplateSummary: ExamTemplateSummary = {
+                                id: s.id,
+                                title: s.title,
+                                subject: s.subject,
+                                grade: s.grade,
+                                status: s.status,
+                                syllabusId: s.syllabusId,
+                            };
+                            responseBody.push(examTemplateSummary);
+                        });
+                        res.status(200).send(responseBody);
+                    } else {
+                        res.status(500).send();
+                    }
+                })
+                .catch((e)=> {
+                    res.status(500).send();
+                });
+        };

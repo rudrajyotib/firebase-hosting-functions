@@ -495,5 +495,18 @@ export const ExamAdminService = {
             }
             return serviceResponse;
         },
+    listExamTemplateByOrganiser:
+        async (organiserId: string): Promise<ServiceResponse<ExamTemplate[]>> => {
+            const serviceResponse: ServiceResponse<ExamTemplate[]> = {
+                responseCode: -1,
+            };
+            const repositoryResponse: RepositoryResponse<ExamTemplate[]> =
+                await ExamRepository.listExamsByOrganiser(organiserId);
+            if (repositoryResponse.responseCode === 0) {
+                serviceResponse.responseCode = 0;
+                serviceResponse.data = repositoryResponse.data;
+            }
+            return serviceResponse;
+        },
 
 };

@@ -76,3 +76,12 @@ export type SyllabusSummary = {
     duration: number;
     totalMarks: number
 }
+
+export type ExamTemplateSummary = {
+    id: string;
+    grade: number;
+    subject: string;
+    status: string;
+    title: string;
+    syllabusId: string;
+}
