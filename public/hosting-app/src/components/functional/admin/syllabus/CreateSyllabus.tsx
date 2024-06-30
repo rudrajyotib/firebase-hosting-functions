@@ -69,7 +69,7 @@ const CreateSyllabus = () => {
     let topicSelect = <></>
 
     if (addSyllabusState.subjectsLoadedState === 'loaded'){
-        topicSelect = <select id={"subjectSelection"} onChange={(e)=>{
+        topicSelect =<div><select id={"subjectSelection"} onChange={(e)=>{
             setTopicToAdd((currentState: TopicFrequenctWeight)=>{
                 const newState = {...currentState}
                 newState.subjectId = e.target.value
@@ -86,44 +86,62 @@ const CreateSyllabus = () => {
                 })
             }
         </select>
+        </div> 
     }
 
     let subjectInput = <></>
     if (addSyllabusState.subjectsLoadedState === 'loaded'){
-        subjectInput = <TextInput name="subject" onChangeHandler={(text:string)=>{
+        subjectInput = 
+        <div style={{display:'flex', flexDirection:'row', flex:1}}>
+        <div style={{display:'flex', flex: 2, paddingRight:'10px', justifyContent:'center', alignItems:'center'}}><span>Subject:</span></div>
+        <div style={{display:'flex', flex: 2}}><TextInput name="subject" onChangeHandler={(text:string)=>{
             setAddSyllabusState((currentState: AddSyllabusState)=>{
                 const newState = {...currentState}
                 newState.subject = text
                 return newState
             })
         }} placeHolderText="Subject" textType="alpha" value="" key={"DurationInput"} />
+        </div>
+        </div>
     
     }
 
     let durationInput = <></>
 
     if (addSyllabusState.subjectsLoadedState === 'loaded'){
-        durationInput = <TextInput name="duration" onChangeHandler={(text:string)=>{
+        durationInput = 
+        
+        <div style={{display:'flex', flexDirection:'row', flex:1}}>
+        <div style={{display:'flex', flex: 2, paddingRight:'10px', justifyContent:'center', alignItems:'center'}}><span>Duration:</span></div>
+        <div style={{display:'flex', flex: 2}}><TextInput name="duration" onChangeHandler={(text:string)=>{
             setAddSyllabusState((currentState: AddSyllabusState)=>{
                 const newState = {...currentState}
                 newState.duration = parseInt(text)
                 return newState
             })
         }} placeHolderText="Duration in Minutes" textType="numeric" value="" key={"DurationInput"} />
+        </div>
+        </div>
     
     }
 
     let titleInput = <></>
 
     if (addSyllabusState.subjectsLoadedState === 'loaded'){
-        titleInput = <TextInput name="title" onChangeHandler={(text:string)=>{
+        titleInput =
+        <div style={{display:'flex', flexDirection:'row', flex:1}}>
+        <div style={{display:'flex', flex: 2, paddingRight:'10px', justifyContent:'center', alignItems:'center'}}><span>Title:</span></div>
+        <div style={{display:'flex', flex: 2}}>
+        
+        <TextInput name="title" onChangeHandler={(text:string)=>{
             setAddSyllabusState((currentState: AddSyllabusState)=>{
                 const newState = {...currentState}
                 newState.title = text
                 return newState
             })
         }} placeHolderText="Title" textType="alpha-sentence" value="" key={"TitleInput"} />
-    
+        </div>
+        </div>
     }
 
     let countInput = <></>
@@ -168,29 +186,38 @@ const CreateSyllabus = () => {
                         weightage: t.weightage
                     }
                 })
-                console.log('Before adding cloned topic:'+JSON.stringify(clonedTopics))
-                console.log('Before adding topic to add'+JSON.stringify(topicToAdd))
+                if (!topicToAdd.subjectId || topicToAdd.subjectId.trim() === ""){
+                    return currentState
+                }
                 const filterTopic = clonedTopics.find((value)=>{
                     return value.subjectAndTopicId === topicToAdd.subjectId
                 })
-                console.log('Filter topic::'+JSON.stringify(filterTopic))
                 if (               
                     filterTopic === undefined ){
-                    console.log('Unique element adding')
                     clonedTopics.push({
                         count: topicToAdd.count,
                         weightage: topicToAdd.weight,
                         subjectAndTopicId: topicToAdd.subjectId
                     })
-                }else{
-                    console.log('Duplicte element adding')
                 }
-                console.log('Adding topics:'+JSON.stringify(clonedTopics))
                 newState.topics = clonedTopics
                 return newState
             })
         }} key={"AddTopicButton"} size="medium"/>
     }
+
+    let addTopicArea = <></>
+
+    if (addSyllabusState.subjectsLoadedState === 'loaded'){
+        addTopicArea = <div style={{display:'flex'}}>
+            <div style={{display:'flex', flex:1, justifyContent:'center', alignItems:'center'}}>{topicSelect}</div>
+            <div style={{display:'flex', flex:1, marginLeft:20,marginRight:20}}>{countInput}</div>
+            <div style={{display:'flex', flex:1, marginRight:30}}>{weightageInput}</div>
+            <div style={{display:'flex', flex:1}}>{addTopicButton}</div>
+        </div>
+    
+    }
+
 
     let topicsList = <></>
 
@@ -204,11 +231,11 @@ const CreateSyllabus = () => {
                         return s.id === t.subjectAndTopicId
                     })
                     const subjectTitle = subject !== undefined ? subject.title : 'Please select'
-                    return <div key={`topicSummaryLine${t.subjectAndTopicId}`} style={{display:'flex', flexDirection:'row'}}>
+                    return (<div key={`topicSummaryLine${t.subjectAndTopicId}`} style={{display:'flex', flexDirection:'row', marginTop:10, marginBottom:10, backgroundColor:'white',paddingTop:5, paddingBottom:5}}>
                         <div><span>{subjectTitle}</span></div>
-                        <div>{t.count}</div>
-                        <div>{t.weightage}</div>
-                    </div>
+                        <div style={{marginLeft:10}}><span style={{fontWeight:'bold'}}>{t.count}</span><span style={{marginLeft:10}}>Questions</span></div>
+                        <div style={{marginLeft:10}}><span style={{marginLeft:10, marginRight:10}}>Weightage:</span><span style={{fontWeight:'bold'}}>{t.weightage}</span></div>
+                    </div>)
                 })
             }
         </div>
@@ -243,17 +270,12 @@ const CreateSyllabus = () => {
     }
 
     return (<div>
-        Create syllabus space
         <div style={{display:'flex', flexDirection:'column'}}>
-            <div>{topicSelect}</div>
             <div>{subjectInput}</div>
             <div>{durationInput}</div>
             <div>{titleInput}</div>
-            <div>Topics</div>
-            <div>{countInput}</div>
-            <div>{weightageInput}</div>
-            <div>{addTopicButton}</div>
-            {topicsList}
+            <div>{addTopicArea}</div>
+            <div>{topicsList}</div>
             <div>
                 {addSyllabusButton}
             </div>
