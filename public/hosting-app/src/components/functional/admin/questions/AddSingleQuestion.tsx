@@ -64,7 +64,7 @@ const AddSingleQuestion = () =>{
             {
                 addQuestionState.subjectsAndTopics.map((s)=>{
                     // eslint-disable-next-line no-template-curly-in-string
-                    return <option id={"`dropdownOption`${s.id}"} onChange={(e)=>{
+                    return <option value={s.id} key={`SubjectSelectOptionId${s.id}`} id={"`dropdownOption`${s.id}"} onChange={(e)=>{
                     }}>{s.title}</option>
                 })
             }
