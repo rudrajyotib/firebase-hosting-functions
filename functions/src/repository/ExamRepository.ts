@@ -808,5 +808,26 @@ export const ExamRepository = {
         response.responseCode = 0;
         return response;
     },
+    listSyllabusByOrganiser: async (organiserId: string) : Promise<RepositoryResponse<Syllabus[]>> => {
+        const repositoryResponse: RepositoryResponse<Syllabus[]> = {
+            responseCode: -1,
+        };
+        const syllabusList: Syllabus[] = [];
+        await repository.collection("Syllabus")
+            .withConverter(SyllabusConverter)
+            .where("organiserId", "==", organiserId)
+            .get()
+            .then((snapshot: FirebaseFirestore.QuerySnapshot<Syllabus>)=>{
+                snapshot.forEach((snap)=>{
+                    syllabusList.push(snap.data());
+                });
+                repositoryResponse.responseCode = 0;
+                repositoryResponse.data = syllabusList;
+            })
+            .catch((e)=>{
+                console.error("Error querying subjects and topics by organiserId", e);
+            });
+        return repositoryResponse;
+    },
 
 };

@@ -4,8 +4,8 @@ import {Request, Response} from "express";
 import {ExamAdminService} from "../../service/ExamAdminService";
 import {OrganiserBuilder} from "../../model/Organiser";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
-import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse} from "../interfaces/OrganiserInteractionDto";
-import {SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
+import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse, SyllabusSummary} from "../interfaces/OrganiserInteractionDto";
+import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
 import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
@@ -39,8 +39,6 @@ export const AddOrganiser =
 export const AddSyllabus =
     async (req: Request, res: Response) => {
         const createSyllabusRequest : CreateSyllabusRequest = req.body as CreateSyllabusRequest;
-
-
         const syllabusBuilder: SyllabusBuilder = new SyllabusBuilder()
             .withDuration(createSyllabusRequest.duration)
             .withStatus("Active")
@@ -48,21 +46,12 @@ export const AddSyllabus =
             .withTitle(createSyllabusRequest.title)
             .withOrganiserId(createSyllabusRequest.organiserId);
         if (createSyllabusRequest.topics && createSyllabusRequest.topics.length > 0 ) {
-            const topicsBuilder: TopicAndQuestionCountBuilder = new TopicAndQuestionCountBuilder();
             createSyllabusRequest.topics.forEach((t)=>{
+                const topicsBuilder: TopicAndQuestionCountBuilder = new TopicAndQuestionCountBuilder();
                 topicsBuilder.withCount(t.count);
                 topicsBuilder.withSubjectAndTopicId(t.subjectAndTopicId);
                 topicsBuilder.withWeightage(t.weightage);
-            });
-            syllabusBuilder.withTopicAndQuestionCounts(topicsBuilder.build());
-        }
-        if (createSyllabusRequest.topics && createSyllabusRequest.topics.length > 0) {
-            createSyllabusRequest.topics.forEach((t)=>{
-                syllabusBuilder.withTopicAndQuestionCounts({
-                    subjectAndTopicId: t.subjectAndTopicId,
-                    count: t.count,
-                    weightage: t.weightage,
-                });
+                syllabusBuilder.withTopicAndQuestionCounts(topicsBuilder.build());
             });
         }
         const syllabus = syllabusBuilder.build();
@@ -72,7 +61,6 @@ export const AddSyllabus =
         }
         ExamAdminService.addSyllabus(syllabus)
             .then((serviceRes: ServiceResponse<string>)=>{
-                console.log("Received response", serviceRes);
                 if (serviceRes.responseCode === 0 ) {
                     res.status(201).send({syllabusId: serviceRes.data});
                 } else {
@@ -409,6 +397,41 @@ export const ListQuestionsByOrganiserAndTopic =
                             organiserId: q.organiserId,
                         };
                         responseBody.push(qSummary);
+                    });
+                    res.status(200).send(responseBody);
+                } else {
+                    res.status(500).send();
+                }
+            })
+            .catch((e)=> {
+                res.status(500).send();
+            });
+    };
+
+export const ListSyllabusByOrganiser =
+    async (req: Request, res: Response) => {
+        const organiserId: string = ""+req.query.organiserId;
+
+        if (organiserId.trim() === "") {
+            res.status(400).send();
+            return;
+        }
+        ExamAdminService
+            .listSyllabusByOrganiser(organiserId)
+            .then((serviceResponse: ServiceResponse<Syllabus[]>)=>{
+                if (serviceResponse.responseCode === 0 && serviceResponse.data) {
+                    const questions: Syllabus[] = serviceResponse.data;
+                    const responseBody: SyllabusSummary[] = [];
+                    questions.forEach((s)=>{
+                        const syllabusSummary: SyllabusSummary = {
+                            id: s.id,
+                            title: s.title,
+                            subject: s.subject,
+                            duration: s.duration,
+                            status: s.status,
+                            totalMarks: s.totalMarks,
+                        };
+                        responseBody.push(syllabusSummary);
                     });
                     res.status(200).send(responseBody);
                 } else {

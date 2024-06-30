@@ -482,4 +482,18 @@ export const ExamAdminService = {
             }
             return serviceResponse;
         },
+    listSyllabusByOrganiser:
+        async (organiserId: string): Promise<ServiceResponse<Syllabus[]>> => {
+            const serviceResponse: ServiceResponse<Syllabus[]> = {
+                responseCode: -1,
+            };
+            const repositoryResponse: RepositoryResponse<Syllabus[]> =
+                await ExamRepository.listSyllabusByOrganiser(organiserId);
+            if (repositoryResponse.responseCode === 0) {
+                serviceResponse.responseCode = 0;
+                serviceResponse.data = repositoryResponse.data;
+            }
+            return serviceResponse;
+        },
+
 };

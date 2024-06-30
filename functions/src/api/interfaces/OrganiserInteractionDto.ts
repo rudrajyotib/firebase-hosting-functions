@@ -67,3 +67,12 @@ export type QuestionSummary = {
     status: string;
     organiserId: string;
 }
+
+export type SyllabusSummary = {
+    id: string;
+    title: string;
+    subject: string;
+    status: string;
+    duration: number;
+    totalMarks: number
+}
