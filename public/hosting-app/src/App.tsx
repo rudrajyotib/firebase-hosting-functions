@@ -13,6 +13,7 @@ import AddSubjectAndTopic from './components/functional/admin/subjectAndTopics/A
 import QuestionsHome from './components/functional/admin/questions/QuestionsHome';
 import AddSingleQuestion from './components/functional/admin/questions/AddSingleQuestion';
 import CreateSyllabus from './components/functional/admin/syllabus/CreateSyllabus';
+import ExamTemplatesList from './components/functional/admin/examTemplate/ExamTemplatesList';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               <Route path='questions' element={<QuestionsHome/>}/>
               <Route path="addSingleQuestion" element={<AddSingleQuestion/>}/>
               <Route path='addsyllabus' element={<CreateSyllabus/>}/>
+              <Route path='examtemplates' element={<ExamTemplatesList/>}/>
             </Route>
             <Route path='/home' element={<CandidateHome/>}/>
             <Route path = "exam/evaluate" element={<EvaluateExam/>}/>

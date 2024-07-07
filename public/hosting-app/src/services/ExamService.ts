@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary, SingleQuestionRequest, AddSyllabusRequest } from "./types/domain/ExamData"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary, SingleQuestionRequest, AddSyllabusRequest, SyllabusSummary, SyllabusSummaryResponse, ExamTemplateSummary, ExamTemplateResponse, CreateExamTemplateRequest } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, EvaluationRequest, EvaluationResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 import { QuestionSummaryResponse } from "./types/api/ExamInteractionDto"
 
@@ -308,7 +308,102 @@ const ExamService = {
         }).catch((e)=>{
             failureCallBack();
         })
-    }   
+    } ,
+    listSyllabus: (orgId: string,
+        successCallback:(syllabusSummaryList: SyllabusSummary[])=>void,
+        failureCallBack:()=>void
+    ) => {
+        let queryParam = '?organiserId='+orgId
+        axios.get("/api/org/syllabusbyorganiser"+queryParam,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if ( status === 200){
+                        return true
+                    }
+                    return false
+                }
+            }
+        ).then((res: AxiosResponse)=>{
+            const syllabusSummaryResponse: SyllabusSummaryResponse[] = res.data
+            const syllabusSummaryList: SyllabusSummary[] = []
+            syllabusSummaryResponse.forEach((s)=>{
+                syllabusSummaryList.push({
+                    id: s.id,
+                    subject: s.subject,
+                    duration: s.duration,
+                    totalMarks: s.totalMarks,
+                    status: s.status,
+                    title: s.title
+                })
+            })
+            successCallback(syllabusSummaryList);
+        }).catch((e)=>{
+            failureCallBack();
+        })
+    },
+    listExamTemplate: (orgId: string,
+        successCallback:(examTemplateSummaryList: ExamTemplateSummary[])=>void,
+        failureCallBack:()=>void
+    ) => {
+        let queryParam = '?organiserId='+orgId
+        axios.get("/api/org/examsbyorganiser"+queryParam,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if ( status === 200){
+                        return true
+                    }
+                    return false
+                }
+            }
+        ).then((res: AxiosResponse)=>{
+            const syllabusSummaryResponse: ExamTemplateResponse[] = res.data
+            const syllabusSummaryList: ExamTemplateSummary[] = []
+            syllabusSummaryResponse.forEach((s)=>{
+                syllabusSummaryList.push({
+                    id: s.id,
+                    subject: s.subject,
+                    status: s.status,
+                    title: s.title,
+                    grade: s.grade,
+                    syllabusId: s.syllabusId
+                })
+            })
+            successCallback(syllabusSummaryList);
+        }).catch((e)=>{
+            failureCallBack();
+        })
+    }  ,
+    addExamTemplate : (examTemplateCreateRequest : CreateExamTemplateRequest,
+        successCallback: (examTemplateId: string)=>void,
+        failureCallback: ()=>void
+    ) => {
+        axios.post("/api/org/addexamtemplate",
+            examTemplateCreateRequest,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if ( status === 201){
+                        return true
+                    }
+                    return false
+                }
+            }
+        ).then((res: AxiosResponse)=>{
+            const examTemplateRes: {examTemplateId: string} = res.data
+            successCallback(examTemplateRes.examTemplateId);
+        }).catch((e)=>{
+            failureCallback();
+        })
+    }
+       
     
 
 }

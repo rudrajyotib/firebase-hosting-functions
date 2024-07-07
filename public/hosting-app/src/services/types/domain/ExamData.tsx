@@ -102,3 +102,47 @@ export type AddSyllabusRequest = {
     title: string,
     topics:  {subjectAndTopicId: string, weightage: number, count: number}[]
 }
+
+export type ExamTemplateSummary = {
+    id: string;
+    grade: number;
+    subject: string;
+    status: string;
+    title: string;
+    syllabusId: string;
+}
+
+export type SyllabusSummaryResponse = {
+    id: string,
+    title: string,
+    subject: string,
+    duration: number,
+    status: string,
+    totalMarks: number
+}
+
+export type SyllabusSummary = {
+    id: string,
+    title: string,
+    subject: string,
+    duration: number,
+    status: string,
+    totalMarks: number
+}
+
+export type ExamTemplateResponse = {
+    id: string,
+    title: string,
+    subject: string,
+    grade: number,
+    status: string,
+    syllabusId: string
+}
+
+export type CreateExamTemplateRequest = {
+    grade: number,
+    subject: string,
+    syllabusId: string,
+    organiserId: string,
+    title: string
+}

@@ -28,6 +28,7 @@ export const SyllabusConverter : FirestoreDataConverter<Syllabus> = {
         syllabusBuilder.withStatus(snapshot.get("status"));
         syllabusBuilder.withTitle(snapshot.get("title"));
         syllabusBuilder.withOrganiserId(snapshot.get("title"));
+        syllabusBuilder.withId(snapshot.id);
         const tna: [] = snapshot.get("topicsAndQuestionCounts");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tna.forEach((topic: any)=>{

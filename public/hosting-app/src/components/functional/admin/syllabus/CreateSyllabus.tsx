@@ -226,7 +226,6 @@ const CreateSyllabus = () => {
             {
                 
                 addSyllabusState.topics.map((t)=>{
-                    console.log('Topic::'+JSON.stringify(t))
                     const subject = addSyllabusState.subjectsList.find((s)=>{
                         return s.id === t.subjectAndTopicId
                     })
