@@ -73,8 +73,8 @@ const ExamTemplatesList = ()=>{
     let examTemplateListView = <></>
     if(examTemplateState.examTemplateLoadStatus === 'loaded'){
         examTemplateListView =
-        <div> {examTemplateState.examTemplates.map((e)=>{
-            return <div key={`examTemplateViewId${e.id}`}>
+        <div style={{display:'flex', flex: 1, flexDirection: 'column'}}> {examTemplateState.examTemplates.map((e)=>{
+            return <div style={{display:'flex', flex: 1, flexDirection: 'row', }} key={`examTemplateViewId${e.id}`}>
                 <ExamTemplateSummaryView summary={e} />
             </div>
         })
