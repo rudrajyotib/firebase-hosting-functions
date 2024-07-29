@@ -10,6 +10,7 @@ export const OrganiserConverter : FirestoreDataConverter<Organiser> = {
             examIds: modelObject.exams,
             syllabusIds: modelObject.syllabus,
             subjects: modelObject.subjects,
+            assignedExaminees: modelObject.assignedExaminees,
         };
     },
     fromFirestore: function(snapshot: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) {
@@ -20,6 +21,7 @@ export const OrganiserConverter : FirestoreDataConverter<Organiser> = {
         const examIds: [] = snapshot.get("examIds");
         const syllabusIds: [] = snapshot.get("syllabusIds");
         const subjects: [] = snapshot.get("subjects");
+        const examineeIds: [] = snapshot.get("assignedExaminees");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         examIds.forEach((examId: string)=>{
             organiserBuilder.withExamId(examId);
@@ -29,6 +31,12 @@ export const OrganiserConverter : FirestoreDataConverter<Organiser> = {
         });
         subjects.forEach((subjectId: string)=>{
             organiserBuilder.withSubjectId(subjectId);
+        });
+        examineeIds.forEach((examinee: {id: string, name: string})=>{
+            organiserBuilder.withAssignedExaminee({
+                id: examinee.id,
+                name: examinee.name,
+            });
         });
         return organiserBuilder.build();
     },

@@ -850,5 +850,73 @@ export const ExamRepository = {
             });
         return repositoryResponse;
     },
+    listAssignedExamineesByOrganiser: async (organiserId: string) : Promise<RepositoryResponse<{id: string, name: string}[]>> => {
+        const repositoryResponse: RepositoryResponse<{id: string, name: string}[]> = {
+            responseCode: -1,
+        };
+        const examineeIdList: {id: string, name: string}[] = [];
+        await repository.collection("Organiser")
+            .withConverter(OrganiserConverter)
+            .doc(organiserId)
+            .get()
+            .then((snapshot: FirebaseFirestore.DocumentSnapshot<Organiser>)=>{
+                if (snapshot.exists ) {
+                    const org: Organiser | undefined= snapshot.data();
+                    if (org === undefined) {
+                        repositoryResponse.responseCode = 2;
+                    } else {
+                        org.assignedExaminees.forEach((e:{id: string, name: string})=>{
+                            examineeIdList.push(e);
+                        });
+                        repositoryResponse.responseCode = 0;
+                        repositoryResponse.data = examineeIdList;
+                    }
+                } else {
+                    repositoryResponse.responseCode = 2;
+                }
+            })
+            .catch((e)=>{
+                console.error("Error querying assigned examinees by organiserId", e);
+                repositoryResponse.responseCode = 1;
+            });
+        return repositoryResponse;
+    },
+    assignExamineeToOrganiser: async (organiserId: string, examineeId: string, examineeName: string) : Promise<RepositoryResponse<boolean>> => {
+        const repositoryResponse: RepositoryResponse<boolean> = {
+            responseCode: -1,
+        };
+
+        const organiserRef: FirebaseFirestore.DocumentReference<Organiser> =
+            repository.collection("Organiser")
+                .withConverter(OrganiserConverter)
+                .doc(organiserId);
+        const organiserDoc: FirebaseFirestore.DocumentSnapshot<Organiser> = await organiserRef.get();
+        if (!organiserDoc.exists) {
+            repositoryResponse.responseCode = 1;
+            return repositoryResponse;
+        }
+        const organiser: Organiser | undefined = organiserDoc.data();
+        if (organiser === undefined) {
+            console.error("ExamRepository.assignExamineeToOrganiser: could not retrieve organiser:"+organiserId);
+            repositoryResponse.responseCode = -1;
+            return repositoryResponse;
+        }
+        if (organiser.assignExamineeId({id: examineeId, name: examineeName}) === false) {
+            repositoryResponse.responseCode = 2;
+            return repositoryResponse;
+        }
+        await organiserRef.set(organiser, {mergeFields: ["assignedExaminees"]})
+            .then(()=>{
+                repositoryResponse.responseCode = 0;
+                repositoryResponse.data = true;
+                return 0;
+            })
+            .catch((e)=>{
+                console.error("ExamRepository.assignExamineeToOrganiser::Error assigning examinee to organiser:"+
+                +organiserId+":", e);
+                return -1;
+            });
+        return repositoryResponse;
+    },
 
 };

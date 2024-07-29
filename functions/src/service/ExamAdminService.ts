@@ -508,5 +508,39 @@ export const ExamAdminService = {
             }
             return serviceResponse;
         },
+    listAssignedExamineesByOrganiser:
+        async (organiserId: string): Promise<ServiceResponse<{id: string, name: string}[]>> => {
+            const serviceResponse: ServiceResponse<{id: string, name: string}[]> = {
+                responseCode: -1,
+            };
+            const repositoryResponse: RepositoryResponse<{id: string, name: string}[]> =
+                await ExamRepository.listAssignedExamineesByOrganiser(organiserId);
+            if (repositoryResponse.responseCode !== 0) {
+                serviceResponse.responseCode = 1;
+                return serviceResponse;
+            }
+            const response: {id: string, name: string}[] = [];
+            if (repositoryResponse.data) {
+                repositoryResponse.data.forEach((examinee: {id: string, name: string})=> {
+                    response.push(examinee);
+                });
+                serviceResponse.responseCode = 0;
+                serviceResponse.data = response;
+            }
+            return serviceResponse;
+        },
+    assignExamineeToOrganiser: async (orgainserId: string, examineeId: string, examineeName: string) : Promise<ServiceResponse<boolean>> => {
+        const serviceResponse: ServiceResponse<boolean>= {responseCode: -1};
+        const repositoryResponse: RepositoryResponse<boolean> =
+            await ExamRepository.assignExamineeToOrganiser(orgainserId, examineeId, examineeName);
+        if (repositoryResponse.responseCode === 0 ) {
+            serviceResponse.responseCode = 0;
+            serviceResponse.data = repositoryResponse.data;
+            return serviceResponse;
+        }
+        serviceResponse.responseCode = repositoryResponse.responseCode;
+        serviceResponse.data = false;
+        return serviceResponse;
+    },
 
 };

@@ -4,7 +4,7 @@ import {Request, Response} from "express";
 import {ExamAdminService} from "../../service/ExamAdminService";
 import {OrganiserBuilder} from "../../model/Organiser";
 import {ServiceResponse} from "../../service/data/ServiceResponse";
-import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, ExamTemplateSummary, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse, SyllabusSummary} from "../interfaces/OrganiserInteractionDto";
+import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopicAndQuestionCountRequest, AssignedExaminee, AssignExamineeToOrganiserRequest, CreateOrganiserRequest, CreateSyllabusRequest, ExamTemplateRequest, ExamTemplateSummary, QuestionSummary, SubjectAndTopicRequest, SubjectsAndTopicsSummaryResponse, SyllabusSummary} from "../interfaces/OrganiserInteractionDto";
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
@@ -479,3 +479,61 @@ export const ListExamTemplateByOrganiser =
                     res.status(500).send();
                 });
         };
+
+export const AssignExamineeToOrganiser =
+        async (req: Request, res: Response) => {
+            const assignExamineeReq: AssignExamineeToOrganiserRequest =
+                req.body as AssignExamineeToOrganiserRequest;
+            if (assignExamineeReq.organiserId.trim() === "" ||
+                assignExamineeReq.examineeId.trim() === "" ||
+                assignExamineeReq.examineeName.trim() === "") {
+                res.status(400).send();
+                return;
+            }
+            ExamAdminService.assignExamineeToOrganiser(assignExamineeReq.organiserId,
+                assignExamineeReq.examineeId,
+                assignExamineeReq.examineeName)
+                .then((serviceResponse: ServiceResponse<boolean>)=>{
+                    if (serviceResponse.responseCode === 0) {
+                        res.status(200).send();
+                        return;
+                    } else {
+                        res.status(400).send();
+                        return;
+                    }
+                })
+                .catch((e)=>{
+                    res.status(500).send();
+                    console.error("Could not assign examinee to organiser", e);
+                });
+        };
+
+export const ListAssignedExamineesByOrganiser =
+    async (req: Request, res: Response) => {
+        const organiserId: string = ""+req.query.organiserId;
+        if (!organiserId || organiserId.trim() === "") {
+            res.status(400).send();
+            return;
+        }
+        ExamAdminService
+            .listAssignedExamineesByOrganiser(organiserId)
+            .then((serviceRes: ServiceResponse<{id:string, name:string}[]>) =>{
+                const responseBody: AssignedExaminee[] = [];
+                if (serviceRes.responseCode === 0 && serviceRes.data) {
+                    const examinees = serviceRes.data;
+                    examinees.forEach((e)=>{
+                        responseBody.push(e);
+                    });
+                    res.status(200).send(responseBody);
+                    return;
+                } else {
+                    res.status(400).send();
+                    return;
+                }
+            })
+            .catch((e)=>{
+                res.status(500).send();
+                console.error("Failed to get assigned examinees for organiser,", e);
+                return;
+            });
+    };

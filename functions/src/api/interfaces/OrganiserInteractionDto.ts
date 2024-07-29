@@ -85,3 +85,14 @@ export type ExamTemplateSummary = {
     title: string;
     syllabusId: string;
 }
+
+export type AssignedExaminee = {
+    id: string,
+    name: string
+}
+
+export type AssignExamineeToOrganiserRequest = {
+    organiserId: string,
+    examineeId: string,
+    examineeName: string
+}
