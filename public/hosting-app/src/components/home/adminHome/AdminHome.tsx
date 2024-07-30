@@ -12,6 +12,7 @@ const AdminHome = () => {
             <div><Link to={"addSingleQuestion"}>Add single question</Link></div>
             <div><Link to={"addsyllabus"}>Create syllabus</Link></div>
             <div><Link to={"examtemplates"}>List exam templates</Link></div>
+            <div><Link to={"examineeList"}>List assigned examinees</Link></div>
             <div>Manage syllabus</div>
             <div>Manage exams</div>
             <div>Manage questions</div>

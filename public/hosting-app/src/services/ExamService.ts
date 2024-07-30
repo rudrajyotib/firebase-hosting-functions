@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios"
-import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary, SingleQuestionRequest, AddSyllabusRequest, SyllabusSummary, SyllabusSummaryResponse, ExamTemplateSummary, ExamTemplateResponse, CreateExamTemplateRequest } from "./types/domain/ExamData"
+import {  ActiveExamDetails, ActiveExams, ExamResponse, NextQuestionRequest, NextQuestionResponse, Question, SubmitAnswerRequest, SubmitAnswerAndMoveNextResponse, ExamResultSummary, SubjectAndTopicSummary, AddSubjectAndTopicRequest, QuestionSummary, SingleQuestionRequest, AddSyllabusRequest, SyllabusSummary, SyllabusSummaryResponse, ExamTemplateSummary, ExamTemplateResponse, CreateExamTemplateRequest, AssignedExaminee, AssignExamineeToOrganiserRequest } from "./types/domain/ExamData"
 import { ActiveExamQueryResponseDefinition, ActiveExamQueryResponseList, ApiSubmitAnswerResponse, EvaluationRequest, EvaluationResponse, QuestionWithIdAndIndex, StartExamResponse, StartResponseBody } from "./types/api/ExamApi"
 import { QuestionSummaryResponse } from "./types/api/ExamInteractionDto"
 
@@ -399,6 +399,54 @@ const ExamService = {
         ).then((res: AxiosResponse)=>{
             const examTemplateRes: {examTemplateId: string} = res.data
             successCallback(examTemplateRes.examTemplateId);
+        }).catch((e)=>{
+            failureCallback();
+        })
+    },
+    listAssignedExaminees: (organiserId: string,
+        successCallback: (examinees: AssignedExaminee[])=>void,
+        failureCallBack: () => void
+    ) => {
+        let queryParam = '?organiserId='+organiserId
+        axios.get("/api/org/listassignedexaminees"+queryParam,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if ( status === 200){
+                        return true
+                    }
+                    return false
+                }
+            })
+            .then((res: AxiosResponse)=>{
+                const examinees: AssignedExaminee[] = res.data;
+                successCallback(examinees)
+            })
+            .catch((e) => {
+                failureCallBack()
+            })
+    },
+    assignExaminee: (addExamineeRequest: AssignExamineeToOrganiserRequest,
+        successCallback: () => void,
+        failureCallback: () => void
+    ) => {
+        axios.post("/api/org/assignexaminee",
+            addExamineeRequest,
+            {
+                'headers' : {
+                    'Accept' : 'application/JSON'
+                },
+                validateStatus: (status:number) =>{
+                    if ( status === 201){
+                        return true
+                    }
+                    return false
+                }
+            }
+        ).then((res: AxiosResponse)=>{
+            successCallback();
         }).catch((e)=>{
             failureCallback();
         })

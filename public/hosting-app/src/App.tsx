@@ -14,6 +14,8 @@ import QuestionsHome from './components/functional/admin/questions/QuestionsHome
 import AddSingleQuestion from './components/functional/admin/questions/AddSingleQuestion';
 import CreateSyllabus from './components/functional/admin/syllabus/CreateSyllabus';
 import ExamTemplatesList from './components/functional/admin/examTemplate/ExamTemplatesList';
+import AssignedExaminees from './components/functional/admin/examinees/AssignedExamineeList';
+import AssignExaminee from './components/functional/admin/examinees/AssignExaminee';
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
               <Route path="addSingleQuestion" element={<AddSingleQuestion/>}/>
               <Route path='addsyllabus' element={<CreateSyllabus/>}/>
               <Route path='examtemplates' element={<ExamTemplatesList/>}/>
+              <Route path='examineeList' element={<AssignedExaminees/>}/>
+              <Route path='assignExaminee' element={<AssignExaminee/>}/>
             </Route>
             <Route path='/home' element={<CandidateHome/>}/>
             <Route path = "exam/evaluate" element={<EvaluateExam/>}/>

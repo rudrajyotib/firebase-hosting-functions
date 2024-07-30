@@ -495,7 +495,7 @@ export const AssignExamineeToOrganiser =
                 assignExamineeReq.examineeName)
                 .then((serviceResponse: ServiceResponse<boolean>)=>{
                     if (serviceResponse.responseCode === 0) {
-                        res.status(200).send();
+                        res.status(201).send();
                         return;
                     } else {
                         res.status(400).send();
