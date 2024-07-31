@@ -203,7 +203,7 @@ const AddSingleQuestion = () =>{
             <div style={{display:'flex', flexDirection:'row'}}>
                 <div style={{display:'flex', flex:2, justifyContent:'center', alignItems:'center'}}>
                     <Button importance="primary" onClick={()=>{
-                       ExamService.addSingleQuestion({
+                       ExamService.addSingleQuestionWithTopic({
                         format:'text',
                         correctOptionIndex: addQuestionState.correctOptionIndex,
                         options: addQuestionState.options,

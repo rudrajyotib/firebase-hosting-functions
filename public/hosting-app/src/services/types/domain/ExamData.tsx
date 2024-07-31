@@ -157,3 +157,9 @@ export type AssignExamineeToOrganiserRequest = {
     examineeId: string,
     examineeName: string
 }
+
+export type CreateExamInstanceRequest = {
+    examineeId: string,
+    organiserId: string,
+    examTemplateId: string,
+}
