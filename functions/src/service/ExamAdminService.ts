@@ -242,6 +242,65 @@ export const ExamAdminService = {
             });
         return serviceResponse;
     },
+    addQuestionAndAttachToTopic: async (question: Question) => {
+        const serviceResponse: ServiceResponse<string> = {
+            responseCode: -1,
+        };
+        if (!question.organiserId || question.organiserId === "") {
+            serviceResponse.data = "OrganiserId is empty or not present while adding question with topic";
+            serviceResponse.responseCode = 1;
+            return serviceResponse;
+        }
+        if (!question.topics || question.topics.length === 0) {
+            serviceResponse.data = "Topics array is empty or not present while adding question with topic";
+            serviceResponse.responseCode = 1;
+            return serviceResponse;
+        }
+        const organiserIdQueryResponse: RepositoryResponse<boolean> =
+            await ExamRepository.existsOrganiser(question.organiserId);
+        if (organiserIdQueryResponse.responseCode !=0 || organiserIdQueryResponse.data === false) {
+            serviceResponse.data = "Organiser does not exist";
+            serviceResponse.responseCode = 2;
+            return serviceResponse;
+        }
+        for (const subjectAndTopicId of question.topics) {
+            const subjectAndTopicExists: RepositoryResponse<boolean> = await ExamRepository.existsSubjectAndTopic(subjectAndTopicId);
+            if (subjectAndTopicExists.responseCode !== 0 ||
+                !subjectAndTopicExists.data ||
+                subjectAndTopicExists.data !== true
+            ) {
+                serviceResponse.responseCode = 1;
+                serviceResponse.data = "SubjectAndTopicId is not valid";
+                return serviceResponse;
+            }
+        }
+        const createQuestionRepositoryResponse : RepositoryResponse<string> = await QuestionRepository.addQuestion(question);
+        if (createQuestionRepositoryResponse.responseCode !== 0) {
+            serviceResponse.responseCode = -1;
+            serviceResponse.data = "Error creating exam subject and topic";
+            return serviceResponse;
+        }
+        if (!createQuestionRepositoryResponse.data) {
+            serviceResponse.responseCode = -2;
+            serviceResponse.data = "Repository could not create subject and topic";
+            return serviceResponse;
+        }
+        for (const subjectAndTopicId of question.topics) {
+            const updateSubjectAndTopicResponse: RepositoryResponse<string> =
+                await ExamRepository.addQuestionIdToSubjectAndTopic(createQuestionRepositoryResponse.data, subjectAndTopicId);
+            if (updateSubjectAndTopicResponse.responseCode > 0 ) {
+                serviceResponse.responseCode = 1;
+                return serviceResponse;
+            }
+            if (updateSubjectAndTopicResponse.responseCode < 0 ) {
+                serviceResponse.responseCode = -1;
+                return serviceResponse;
+            }
+        }
+        serviceResponse.data = createQuestionRepositoryResponse.data;
+        serviceResponse.responseCode = 0;
+        return serviceResponse;
+    },
     addQuestion: async (question: Question) => {
         const serviceResponse: ServiceResponse<string> = {
             responseCode: -1,
@@ -401,7 +460,7 @@ export const ExamAdminService = {
             }).map((qId)=>{
                 return qId.id;
             });
-            questionCount += activeQuestionIds.length;
+            questionCount += topicAndQuestionCount.count;
             if (activeQuestionIds.length < topicAndQuestionCount.count) {
                 createExamInstanceServiceResponse.responseCode=3;
                 createExamInstanceServiceResponse.data = "Creating exam instance for exam template:"+

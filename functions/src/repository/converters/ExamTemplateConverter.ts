@@ -20,6 +20,7 @@ export const ExamTemplateConverter : FirestoreDataConverter<ExamTemplate> = {
         exampleTemplateBuilder.withStatus(snapshot.get("status"));
         exampleTemplateBuilder.withOrganiserId(snapshot.get("organiserId"));
         exampleTemplateBuilder.withTitle(snapshot.get("title"));
+        exampleTemplateBuilder.withId(snapshot.id);
 
         return exampleTemplateBuilder.build();
     },

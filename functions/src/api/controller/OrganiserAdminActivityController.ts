@@ -255,6 +255,60 @@ export const CreateQuestion =
                 res.status(500).send();
             });
     };
+export const CreateQuestionWithTopic =
+    async (req: Request, res: Response) => {
+        const createQuestionRequest: CreateQuestionRequest =
+            req.body as CreateQuestionRequest;
+        const questionBuilder: QuestionBuilder =
+            new QuestionBuilder();
+        if (!createQuestionRequest.topicId || createQuestionRequest.topicId === "") {
+            res.status(400).send();
+            return;
+        }
+        questionBuilder
+            .withFormat(createQuestionRequest.format)
+            .withOrganiserId(createQuestionRequest.organiserId)
+            .withCorrectOptionIndex(createQuestionRequest.correctOptionIndex);
+        if (createQuestionRequest.tags && createQuestionRequest.tags.length > 0) {
+            createQuestionRequest.tags.forEach((tag)=> {
+                questionBuilder.withTag(tag);
+            });
+        }
+        if (createQuestionRequest.questionLines && createQuestionRequest.questionLines.length > 0) {
+            createQuestionRequest.questionLines.forEach((questionLine)=>{
+                questionBuilder.withQuestionLine(questionLine);
+            });
+        }
+        if (createQuestionRequest.options && createQuestionRequest.options.length > 0) {
+            createQuestionRequest.options.forEach((option)=>{
+                questionBuilder.withOption(option);
+            });
+        }
+        if (createQuestionRequest.topicId && createQuestionRequest.topicId.trim() != "") {
+            questionBuilder.withSubjectAndTopicId(createQuestionRequest.topicId.trim());
+        }
+        const question: Question = questionBuilder.build();
+        if (question.isValid() === false) {
+            console.log("Question is not valid");
+            res.status(400).send();
+            return;
+        }
+        ExamAdminService.addQuestionAndAttachToTopic(question)
+            .then((serviceResponse: ServiceResponse<string>) =>{
+                if (serviceResponse.responseCode === 0) {
+                    res.status(201).send({questionId: serviceResponse.data});
+                } else if (serviceResponse.responseCode > 0) {
+                    console.error("Service response data", serviceResponse.data);
+                    res.status(400).send();
+                } else {
+                    res.status(500).send();
+                }
+            })
+            .catch((e)=>{
+                console.error("Error creating question in controller", e);
+                res.status(500).send();
+            });
+    };
 export const CorrelateQuestionAndSubjectTopic =
     async (req: Request, res: Response) => {
         const correlateQuestionAndTopicRequest: CorrelateQuestionAndTopicRequest =
