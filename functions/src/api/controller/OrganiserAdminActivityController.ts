@@ -8,7 +8,7 @@ import {AddExamIdsToOrganiserRequest, AddSyllabusIdsToOrganiserRequest, AddTopic
 import {Syllabus, SyllabusBuilder, TopicAndQuestionCount, TopicAndQuestionCountBuilder} from "../../model/Syllabus";
 import {ExamTemplate, ExamTemplateBuilder} from "../../model/ExamTemplate";
 import {SubjectAndTopic, SubjectAndTopicBuilder} from "../../model/SubjectAndTopic";
-import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
+import {AddExamineeRequest, CorrelateQuestionAndTopicRequest, CreateBatchQuestionRequest, CreateExamInstanceRequest, CreateQuestionRequest} from "../interfaces/ExamInteractionDto";
 import {Question, QuestionBuilder} from "../../model/Question";
 import {ExamineeBuilder} from "../../model/Examinee";
 import {SubjectAndTopicSummary} from "../../model/SubjectAndTopicSummary";
@@ -589,5 +589,62 @@ export const ListAssignedExamineesByOrganiser =
                 res.status(500).send();
                 console.error("Failed to get assigned examinees for organiser,", e);
                 return;
+            });
+    };
+export const CreateQuestionInBatchWithTopic =
+    async (req: Request, res: Response) => {
+        const createQuestionRequest: CreateBatchQuestionRequest =
+            req.body as CreateBatchQuestionRequest;
+        const questionBatch: Question[] = [];
+        console.log("Received batch request to add questions");
+        if (!createQuestionRequest.topicId || createQuestionRequest.topicId.trim() === "") {
+            res.status(400).send();
+            return;
+        }
+        createQuestionRequest.questions.forEach((questionInput)=>{
+            if (!questionInput.topicId || questionInput.topicId === "") {
+                res.status(400).send();
+                return;
+            }
+            const questionBuilder: QuestionBuilder =
+                new QuestionBuilder();
+            questionBuilder
+                .withFormat(questionInput.format)
+                .withOrganiserId(questionInput.organiserId)
+                .withCorrectOptionIndex(questionInput.correctOptionIndex);
+            if (questionInput.tags && questionInput.tags.length > 0) {
+                questionInput.tags.forEach((tag)=> {
+                    questionBuilder.withTag(tag);
+                });
+            }
+            if (questionInput.questionLines && questionInput.questionLines.length > 0) {
+                questionInput.questionLines.forEach((questionLine)=>{
+                    questionBuilder.withQuestionLine(questionLine);
+                });
+            }
+            if (questionInput.options && questionInput.options.length > 0) {
+                questionInput.options.forEach((option)=>{
+                    questionBuilder.withOption(option);
+                });
+            }
+            questionBuilder.withSubjectAndTopicId(createQuestionRequest.topicId.trim());
+            const question: Question = questionBuilder.build();
+            if (question.isValid() === false) {
+                console.log("Question is not valid");
+                res.status(400).send();
+                return;
+            }
+            questionBatch.push(question);
+        });
+        ExamAdminService.addQuestionsInBatchToTopic(questionBatch, createQuestionRequest.topicId)
+            .then((serviceResponse: ServiceResponse<boolean>) =>{
+                if (serviceResponse.responseCode === 0) {
+                    res.status(201).send({questionId: serviceResponse.data});
+                } else if (serviceResponse.responseCode > 0) {
+                    console.error("Service response data", serviceResponse.data);
+                    res.status(400).send();
+                } else {
+                    res.status(500).send();
+                }
             });
     };

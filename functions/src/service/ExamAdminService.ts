@@ -601,5 +601,18 @@ export const ExamAdminService = {
         serviceResponse.data = false;
         return serviceResponse;
     },
+    addQuestionsInBatchToTopic: async (questions: Question[], topicId: string) : Promise<ServiceResponse<boolean>> => {
+        const serviceResponse: ServiceResponse<boolean>= {responseCode: -1};
+        const repositoryResponse: RepositoryResponse<boolean> =
+            await QuestionRepository.addQuestionsWithTopicInBatch(questions, topicId);
+        if (repositoryResponse.responseCode === 0 ) {
+            serviceResponse.responseCode = 0;
+            serviceResponse.data = true;
+            return serviceResponse;
+        }
+        serviceResponse.responseCode = repositoryResponse.responseCode;
+        serviceResponse.data = false;
+        return serviceResponse;
+    },
 
 };

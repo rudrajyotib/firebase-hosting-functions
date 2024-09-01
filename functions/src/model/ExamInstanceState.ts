@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
+import dayjs = require("dayjs");
 import {Question} from "./Question";
 
 export class ExamInstanceState {
@@ -41,8 +42,10 @@ export class ExamInstanceState {
             return -1;
         }
         if (this.startTime) {
-            const secondsPassed = new Date().getUTCSeconds() - this.startTime.getUTCSeconds();
-            return this.duration - secondsPassed;
+            const dayNow: dayjs.Dayjs = dayjs();
+            const dayStart = dayjs(this.startTime);
+            const diffInSeconds = Math.abs(dayNow.diff(dayStart, "seconds"));
+            return this.duration - diffInSeconds;
         }
         return -1;
     };

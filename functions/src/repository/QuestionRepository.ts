@@ -3,6 +3,8 @@ import {Question} from "../model/Question";
 import {source} from "../infra/DataSource";
 import {QuestionConverter} from "./converters/QuestionConverter";
 import {RepositoryResponse} from "./data/RepositoryResponse";
+import {SubjectAndTopicConverter} from "./converters/SubjectAndTopicsConverter";
+import {SubjectAndTopic} from "../model/SubjectAndTopic";
 const repository = source.repository;
 
 export const QuestionRepository = {
@@ -121,6 +123,46 @@ export const QuestionRepository = {
             .catch((err)=>{
                 console.error("Error in repository querying for Question", err);
                 response.responseCode=1;
+            });
+        return response;
+    },
+
+    addQuestionsWithTopicInBatch: async (questions: Question[], topicId: string):
+     Promise<RepositoryResponse<boolean>> =>{
+        const response: RepositoryResponse<boolean> = {responseCode: -1, data: false};
+        const createBatch = repository.batch();
+        const subjectAndTopicRef: FirebaseFirestore.DocumentReference<SubjectAndTopic> =
+            repository.collection("SubjectAndTopic").withConverter(SubjectAndTopicConverter).doc(topicId);
+        const subjectAndTopicDoc: FirebaseFirestore.DocumentSnapshot<SubjectAndTopic> = await subjectAndTopicRef.get();
+        if (subjectAndTopicDoc.exists === false ) {
+            response.responseCode = 1;
+            console.error("QustionRepository.addQuestionsWithTopicInBatch: Topic with ID:"+topicId+":not found");
+            return response;
+        }
+        const subjectAndTopic: SubjectAndTopic | undefined = subjectAndTopicDoc.data();
+        if (subjectAndTopic == undefined) {
+            response.responseCode = 2;
+            console.error("QustionRepository.addQuestionsWithTopicInBatch: Topic with ID:"+topicId+":doc is empty");
+            return response;
+        }
+        questions.forEach((q)=>{
+            const ref = repository
+                .collection("Question")
+                .withConverter(QuestionConverter)
+                .doc();
+            subjectAndTopic.questionIds.push({id: ref.id, active: true});
+            createBatch.create(ref, q);
+        });
+        createBatch.set(subjectAndTopicRef, subjectAndTopic, {mergeFields: ["questionIds"]});
+        await createBatch.commit()
+            .then(()=>{
+                response.responseCode = 0;
+                response.data = true;
+            })
+            .catch((e)=>{
+                response.responseCode = -1;
+                response.data = false;
+                console.error("QustionRepository.addQuestionsWithTopicInBatch: Batch failed for Topic:"+topicId+"", e);
             });
         return response;
     },

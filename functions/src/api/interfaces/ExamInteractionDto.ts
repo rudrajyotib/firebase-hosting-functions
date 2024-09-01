@@ -14,6 +14,10 @@ export type CreateQuestionRequest = {
     questionId: string;
     topicId: string;
 }
+export type CreateBatchQuestionRequest = {
+    questions: CreateQuestionRequest[],
+    topicId: string
+}
 export type SubmitAnswerRequest = {
     questionId: string,
     answer: number,

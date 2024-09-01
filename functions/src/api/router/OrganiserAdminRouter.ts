@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 /* eslint-disable new-cap */
 import express = require("express")
-import {AddExamIdsToOrganiser, AddExaminee, AddOrganiser, AddSyllabus, AddSyllabusIdsToOrganiser, AddTopicsToSyllabus, AssignExamineeToOrganiser, CorrelateQuestionAndSubjectTopic, CreateExamInstance, CreateExamTemplate, CreateQuestion, CreateQuestionWithTopic, CreateSubjectAndTopic, ListAssignedExamineesByOrganiser, ListExamTemplateByOrganiser, ListOfSubjectAndTopicsByOrg, ListQuestionsByOrganiserAndTopic, ListSyllabusByOrganiser} from "../controller/OrganiserAdminActivityController";
+import {AddExamIdsToOrganiser, AddExaminee, AddOrganiser, AddSyllabus, AddSyllabusIdsToOrganiser, AddTopicsToSyllabus, AssignExamineeToOrganiser, CorrelateQuestionAndSubjectTopic, CreateExamInstance, CreateExamTemplate, CreateQuestion, CreateQuestionInBatchWithTopic, CreateQuestionWithTopic, CreateSubjectAndTopic, ListAssignedExamineesByOrganiser, ListExamTemplateByOrganiser, ListOfSubjectAndTopicsByOrg, ListQuestionsByOrganiserAndTopic, ListSyllabusByOrganiser} from "../controller/OrganiserAdminActivityController";
 const organiserAdminRouter = express.Router();
 
 organiserAdminRouter.post("/add", AddOrganiser);
@@ -22,5 +22,6 @@ organiserAdminRouter.get("/syllabusbyorganiser", ListSyllabusByOrganiser);
 organiserAdminRouter.get("/examsbyorganiser", ListExamTemplateByOrganiser);
 organiserAdminRouter.get("/listassignedexaminees", ListAssignedExamineesByOrganiser);
 organiserAdminRouter.post("/assignexaminee", AssignExamineeToOrganiser);
+organiserAdminRouter.post("/addquestioninbatch", CreateQuestionInBatchWithTopic);
 
 export {organiserAdminRouter};
